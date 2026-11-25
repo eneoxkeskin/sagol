@@ -47,7 +47,7 @@ type DefterKaydi = { id: string; tur: "gonderilen" | "alinan"; d: string; kart: 
   Bitti sayılır: yenilemeden sonra kayıtlar duruyor; bozuk localStorage → boş defter, crash yok; lint temiz.
   Özet biçimi: "Bu hafta 3 kişiye teşekkür ettin: Ayşe, Mert, Annem." + aldıysan "1 teşekkür aldın." Hafta boşsa sayı yok: "Aklına biri gelirse burası hazır."
   Not: localStorage'ı `useSyncExternalStore` ile oku (effect içinde setState lint hatası verir; SSR'da boş liste).
-- [ ] **M6 — Cila + README + deploy hazırlığı (60 dk)**: `ethics-check` skill'ini çalıştır, bulguları düzelt; favicon/ikon, `not-found.tsx`, boş durumlar, odak stilleri, kontrast; gizlilik notu (formda: "Link kimdeyse kartı o görür. Hiçbir şey sunucuda saklanmaz."); README (ne, neden, mimari, etik ilkeler, yerel çalıştırma, canlı URL); Deploy kuralını uygula.
+- [x] **M6 — Cila + README + deploy hazırlığı (60 dk)**: `ethics-check` skill'ini çalıştır, bulguları düzelt; favicon/ikon, `not-found.tsx`, boş durumlar, odak stilleri, kontrast; gizlilik notu (formda: "Link kimdeyse kartı o görür. Hiçbir şey sunucuda saklanmaz."); README (ne, neden, mimari, etik ilkeler, yerel çalıştırma, canlı URL); Deploy kuralını uygula.
   Bitti sayılır: ethics-check 0 kritik bulgu; lint+build+test temiz; README tamam; deploy kuralı uygulandı.
 
 ## Deploy kuralı
@@ -63,3 +63,4 @@ type DefterKaydi = { id: string; tur: "gonderilen" | "alinan"; d: string; kart: 
 - (M3) "Defterime kaydet" düğmesi M5e bırakıldı: defter.ts henüz yok, M5 düğmeyi kart sayfasına ekler. Kart sayfası Suspense içinde params okur (cacheComponents). Geçersiz link 200 ile nazik hata ekranı gösterir.
 - (M4) Varsayılan ImageResponse fontu ğşıİöüç glifleri doğru çiziyor (gözle doğrulandı); özel TTF indirilmedi, paket küçük kaldı. Bozuk veri: genel SağOl görseli.
 - (M5) Defter kaydı `d` ile tekilleştirilir (id = d); okunurken her kayıt decodeCard ile yeniden doğrulanır. "Şimdi" saat başına yuvarlanan useSyncExternalStore değeri (prerender Date.now kısıtı). Haftalık özet adları tekilleştirir, 5ten fazlaysa "ve diğerleri". Kalıcılık/tarayıcı testi elle yapılmadı; ayrıştırma birim testli.
+- (M6) ethics-check: 0 kritik. Bulgular: İngilizce varsayılan 404 → not-found.tsx; varsayılan ikon → icon.svg. Gizlilik notu M2 formunda zaten var.
