@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import AliciEkrani from "@/components/AliciEkrani";
 import { decodeCard } from "@/lib/card";
+import { sesAcik } from "@/lib/ozellik";
 
 export async function generateMetadata({
   params,
@@ -39,7 +40,7 @@ async function KartGorunumu({ params }: Pick<PageProps<"/k/[d]">, "params">) {
     );
   }
 
-  return <AliciEkrani kart={kart} d={d} />;
+  return <AliciEkrani kart={kart} d={d} ses={sesAcik()} />;
 }
 
 export default function KartSayfasi({ params }: PageProps<"/k/[d]">) {

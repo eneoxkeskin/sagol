@@ -1,5 +1,6 @@
 import Link from "next/link";
 import KaydetDugmesi from "@/components/KaydetDugmesi";
+import SesOynatici from "@/components/SesOynatici";
 import { yonelmeEki, type Kart, type Tema } from "@/lib/card";
 
 const ZEMIN: Record<Tema, string> = {
@@ -15,7 +16,15 @@ const tarihBicimi = new Intl.DateTimeFormat("tr-TR", {
   timeZone: "Europe/Istanbul",
 });
 
-export default function AliciEkrani({ kart, d }: { kart: Kart; d: string }) {
+export default function AliciEkrani({
+  kart,
+  d,
+  ses = false,
+}: {
+  kart: Kart;
+  d: string;
+  ses?: boolean;
+}) {
   const satirlar = kart.msg.split("\n").filter((s) => s.trim() !== "");
   const tarih = tarihBicimi.format(new Date(kart.t * 1000));
   const baglam = kart.from ? `${kart.from} · ${tarih}` : tarih;
@@ -46,7 +55,7 @@ export default function AliciEkrani({ kart, d }: { kart: Kart; d: string }) {
           ))}
         </div>
         <p className="mt-8 text-lg font-semibold sm:text-xl">{baglam}</p>
-        {/* Ses oynatıcı yuvası (M12) */}
+        {ses && kart.s ? <SesOynatici id={kart.s} /> : null}
       </div>
 
       <div className="mx-auto w-full max-w-md">
@@ -62,6 +71,14 @@ export default function AliciEkrani({ kart, d }: { kart: Kart; d: string }) {
           >
             {geriDon ? `${geriDon} karşılık ver` : "Karşılık ver"}
           </Link>
+          {ses ? (
+            <Link
+              href={`${karsilikHref}${karsilikHref.includes("?") ? "&" : "?"}ses=1`}
+              className="rounded-full border-2 border-stone-800 px-5 py-3 text-center font-bold"
+            >
+              Sesle karşılık ver
+            </Link>
+          ) : null}
           <KaydetDugmesi d={d} />
         </div>
         <p className="mt-6 flex justify-center gap-6">

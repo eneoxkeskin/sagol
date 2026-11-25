@@ -10,6 +10,7 @@ import {
   kodNoktasiUzunlugu,
   type Tema,
 } from "@/lib/card";
+import SesKaydedici, { type SesKaydi } from "@/components/SesKaydedici";
 import { ekle } from "@/lib/defter";
 
 const IPUCLARI = [
@@ -45,11 +46,19 @@ export default function YaziFormu({
   h,
   baslangicKime = "",
   sayac = false,
+  ses = false,
+  sesBaslangicAcik = false,
 }: {
   h: number;
   baslangicKime?: string;
   sayac?: boolean;
+  ses?: boolean;
+  sesBaslangicAcik?: boolean;
 }) {
+  const [kayit, setKayit] = useState<SesKaydi | null>(null);
+  const [yuklenen, setYuklenen] = useState<{ id: string; token: string; bitis: number } | null>(null);
+  const [yukleniyor, setYukleniyor] = useState(false);
+  const [silLink, setSilLink] = useState<string | null>(null);
   const [to, setTo] = useState(baslangicKime);
   const [msg, setMsg] = useState("");
   const [from, setFrom] = useState("");
@@ -66,8 +75,41 @@ export default function YaziFormu({
     setMsg(kesKodNoktasi(yeni, LIMITLER.msg));
   }
 
-  function olustur() {
-    if (!hazir) return;
+  async function sesiYukle(k: SesKaydi) {
+    try {
+      const r = await fetch("/api/ses", {
+        method: "POST",
+        headers: { "Content-Type": k.mime, "X-Sure-Ms": String(k.sureMs) },
+        body: k.blob,
+      });
+      if (!r.ok) return null;
+      const j: unknown = await r.json();
+      if (
+        typeof j === "object" && j !== null &&
+        typeof (j as { id?: unknown }).id === "string" &&
+        typeof (j as { token?: unknown }).token === "string" &&
+        typeof (j as { bitis?: unknown }).bitis === "number"
+      ) {
+        return j as { id: string; token: string; bitis: number };
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  async function olustur() {
+    if (!hazir || yukleniyor) return;
+    let ek = yuklenen;
+    let not = "";
+    if (ses && kayit && !ek) {
+      setYukleniyor(true);
+      setDurum("Ses hazırlanıyor…");
+      ek = await sesiYukle(kayit);
+      setYukleniyor(false);
+      if (ek) setYuklenen(ek);
+      else not = "Ses yüklenemedi; kartın yazılı olarak hazır.";
+    }
     const d = encodeCard({
       v: 1,
       to: to.trim(),
@@ -75,14 +117,16 @@ export default function YaziFormu({
       ...(from.trim() ? { from: from.trim() } : {}),
       th,
       h,
+      ...(ek ? { s: ek.id } : {}),
       t: Math.floor(Date.now() / 1000),
     });
     if (d.length > LIMITLER.dMax) {
       setDurum("Kart biraz uzun oldu. Mesajı ya da adları kısaltır mısın?");
       return;
     }
-    setDurum("");
-    ekle("gonderilen", d);
+    setDurum(not);
+    setSilLink(ek ? `${window.location.origin}/sil#${ek.id}.${ek.token}` : null);
+    ekle("gonderilen", d, ek?.bitis);
     if (sayac) {
       // Anonim günlük sayaç; gövde yok. Hata akışı etkilemez.
       fetch("/api/sayac", { method: "POST", keepalive: true }).catch(() => {});
@@ -144,6 +188,28 @@ export default function YaziFormu({
             Linki kopyala
           </button>
         </div>
+        {silLink ? (
+          <div className="mt-4 rounded-2xl border-2 border-stone-300 bg-white p-4">
+            <p className="font-semibold">
+              Bu linkle sesi istediğin an silebilirsin. Yalnızca sende kalsın.
+            </p>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(silLink);
+                  setDurum("Silme linki kopyalandı");
+                } catch {
+                  setDurum("Kopyalanamadı; silme linkini elle seçip kopyalayabilirsin.");
+                }
+              }}
+              className="mt-2 font-semibold underline underline-offset-4"
+            >
+              Silme linkini kopyala
+            </button>
+            <p className="mt-2 break-all text-sm">{silLink}</p>
+          </div>
+        ) : null}
         <p
           role="status"
           aria-live="polite"
@@ -245,17 +311,30 @@ export default function YaziFormu({
       </fieldset>
 
       <div>
+        {ses ? (
+          <div className="mb-5">
+            <SesKaydedici
+              baslangicAcik={sesBaslangicAcik}
+              onDegis={(k) => {
+                setKayit(k);
+                setYuklenen(null);
+              }}
+            />
+          </div>
+        ) : null}
         <p className="mb-2 font-bold">Önizleme</p>
         <Kart to={to.trim()} msg={msg.trim()} from={from.trim()} th={th} />
       </div>
 
       <p className="text-sm text-muted">
-        Link kimdeyse kartı o görür. Hiçbir şey sunucuda saklanmaz.
+        {ses
+          ? "Yazdığın metin sunucuya gitmez. Ses eklersen 7 gün saklanır, sonra silinir."
+          : "Link kimdeyse kartı o görür. Hiçbir şey sunucuda saklanmaz."}
       </p>
 
       <button
         type="submit"
-        disabled={!hazir}
+        disabled={!hazir || yukleniyor}
         className="rounded-full bg-stone-800 px-5 py-3 text-lg font-bold text-white disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-700"
       >
         Kartı oluştur

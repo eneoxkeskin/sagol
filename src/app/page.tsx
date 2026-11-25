@@ -3,7 +3,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import YaziFormu from "@/components/YaziFormu";
 import { temizleAd } from "@/lib/card";
-import { sayacAcik } from "@/lib/ozellik";
+import { sayacAcik, sesAcik } from "@/lib/ozellik";
 import { bugunSayisi } from "@/lib/sayac";
 
 function ilk(v: string | string[] | undefined): string | undefined {
@@ -18,7 +18,15 @@ async function ParametreliForm({
   const n = Number(ilk(sp.h) ?? ilk(sp.z));
   const h = Number.isInteger(n) && n >= 1 && n <= 999 ? n : 1;
   const kime = temizleAd(ilk(sp.to) ?? "");
-  return <YaziFormu h={h} baslangicKime={kime} sayac={sayacAcik()} />;
+  return (
+    <YaziFormu
+      h={h}
+      baslangicKime={kime}
+      sayac={sayacAcik()}
+      ses={sesAcik()}
+      sesBaslangicAcik={ilk(sp.ses) === "1"}
+    />
+  );
 }
 
 async function BugunSayaci() {
