@@ -27,4 +27,5 @@ npm run build
 ```
 
 ## Canlı URL
-Henüz yayınlanmadı.
+- Canlı: https://sagol-theta.vercel.app
+- Kod: https://github.com/eneoxkeskin/sagol
