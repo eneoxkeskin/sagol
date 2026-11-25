@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { decodeCard, encodeCard, yonelmeEki, type Kart } from "./card.ts";
+import { ayrilmaEki, decodeCard, encodeCard, yonelmeEki, type Kart } from "./card.ts";
 
 const enc = (o: unknown) =>
   Buffer.from(JSON.stringify(o)).toString("base64url");
@@ -60,6 +60,18 @@ test("yönelme eki", () => {
   assert.equal(yonelmeEki("Ali Can"), "Ali Can'a");
   assert.equal(yonelmeEki("123"), null);
   assert.equal(yonelmeEki("BCD"), null);
+});
+
+test("ayrılma eki", () => {
+  assert.equal(ayrilmaEki("Mert"), "Mert'ten");
+  assert.equal(ayrilmaEki("Ayşe"), "Ayşe'den");
+  assert.equal(ayrilmaEki("Işık"), "Işık'tan");
+  assert.equal(ayrilmaEki("Annem"), "Annem'den");
+  assert.equal(ayrilmaEki("Ali Can"), "Ali Can'dan");
+  assert.equal(ayrilmaEki("Gül"), "Gül'den");
+  assert.equal(ayrilmaEki("Serap"), "Serap'tan");
+  assert.equal(ayrilmaEki("BCD"), null);
+  assert.equal(ayrilmaEki("42"), null);
 });
 
 test("normalize ve varsayılanlar", () => {

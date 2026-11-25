@@ -1,5 +1,6 @@
 import Link from "next/link";
 import CikartmaKatmani from "@/components/CikartmaKatmani";
+import GorselPaylas from "@/components/GorselPaylas";
 import HalkaOynatici from "@/components/HalkaOynatici";
 import { KART_HALKA, KART_ORAN } from "@/lib/cikartma";
 import KaydetDugmesi from "@/components/KaydetDugmesi";
@@ -102,6 +103,7 @@ export default function AliciEkrani({
               Yazıyla karşılık ver
             </Link>
             <KaydetDugmesi d={d} />
+            <GorselPaylas d={d} />
             <Link href="/hakkinda" className={kucukLink}>
               Hakkında
             </Link>

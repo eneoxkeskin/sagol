@@ -48,6 +48,20 @@ export function yonelmeEki(ad: string): string | null {
   return `${temizle(ad)}'${ek}`;
 }
 
+/** "Mert" → "Mert'ten", "Ayşe" → "Ayşe'den", "Işık" → "Işık'tan" (ünsüz sertleşmesi: f s t k ç ş h p). Emin olunamazsa null. */
+export function ayrilmaEki(ad: string): string | null {
+  const kelime = temizle(ad).split(/\s+/).pop() ?? "";
+  const k = kelime.toLocaleLowerCase("tr");
+  if (!k || !/^\p{L}+$/u.test(k)) return null;
+  const unluler = "aeıioöuü";
+  let son: string | null = null;
+  for (const c of k) if (unluler.includes(c)) son = c;
+  if (!son) return null;
+  const sonHarf = [...k].pop() as string;
+  const sert = "fstkçşhp".includes(sonHarf);
+  return `${temizle(ad)}'${sert ? "t" : "d"}${"aıou".includes(son) ? "an" : "en"}`;
+}
+
 export const LIMITLER = {
   to: 40,
   msg: 200,
