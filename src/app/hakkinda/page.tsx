@@ -26,7 +26,7 @@ export default function Hakkinda() {
         <li>
           <strong>Ses kaydı:</strong>{" "}
           {ses
-            ? "Sesli teşekkür eklersen kayıt 7 gün saklanır, sonra kalıcı olarak silinir. Gönderen olarak sen, silme linkiyle istediğin an silebilirsin."
+            ? "Sesli teşekkür eklersen kayıt ve sesin şekli (halkayı çizen 48 sayı) 7 gün saklanır, sonra kalıcı olarak silinir. Gönderen olarak sen, silme linkiyle istediğin an silebilirsin."
             : "Sesli teşekkür henüz etkin değil. Açıldığında kayıt 7 gün saklanacak, sonra kalıcı olarak silinecek ve gönderen istediği an silebilecek."}
         </li>
         <li>

@@ -204,15 +204,7 @@ export default function KartSusle({
           {st.map((c, i) => (
             <div
               key={i}
-              role="button"
-              tabIndex={0}
-              aria-label={`${cikartmaAdi(c.k)} çıkartması`}
-              aria-describedby="susle-ipucu-klavye"
-              aria-pressed={secili === i}
-              onPointerDown={(e) => cikartmaBasti(e, i)}
-              onFocus={() => setSecili(i)}
-              onKeyDown={(e) => tus(e, i)}
-              className="absolute aspect-square cursor-grab touch-none"
+              className="absolute aspect-square"
               style={{
                 left: `${c.x * 100}%`,
                 top: `${c.y * 100}%`,
@@ -220,7 +212,18 @@ export default function KartSusle({
                 transform: `translate(-50%, -50%) rotate(${c.r}deg)`,
               }}
             >
-              <div className={`h-full w-full ${yeni === i ? "motion-safe:animate-[pop_200ms_ease-out]" : ""}`}>
+              {/* Çıkartma, sil düğmesi ve tutamaç kardeş öğeler: iç içe etkileşimli öğe yok. */}
+              <div
+                role="button"
+                tabIndex={0}
+                aria-label={`${cikartmaAdi(c.k)} çıkartması`}
+                aria-describedby="susle-ipucu-klavye"
+                aria-pressed={secili === i}
+                onPointerDown={(e) => cikartmaBasti(e, i)}
+                onFocus={() => setSecili(i)}
+                onKeyDown={(e) => tus(e, i)}
+                className={`h-full w-full cursor-grab touch-none ${yeni === i ? "motion-safe:animate-[pop_200ms_ease-out]" : ""}`}
+              >
                 <CikartmaSekli k={c.k} murekkep="var(--murekkep)" />
               </div>
               {secili === i ? (

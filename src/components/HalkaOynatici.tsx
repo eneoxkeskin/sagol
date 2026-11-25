@@ -130,9 +130,10 @@ export default function HalkaOynatici({
 
   return (
     <div className="flex flex-col items-center">
+      <div className="relative" style={{ width: size, height: size }}>
+      {/* Slider ve oynat düğmesi kardeş öğeler: iç içe etkileşimli öğe yok. */}
       <div
-        className="relative"
-        style={{ width: size, height: size }}
+        className="absolute inset-0 rounded-full"
         {...(sesVar && durum.t === "hazir"
           ? {
               role: "slider",
@@ -169,15 +170,16 @@ export default function HalkaOynatici({
           offOpacity={0.3}
           ciz
         />
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+      </div>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1">
           {sesVar ? (
             <>
               <button
+                className="pointer-events-auto flex size-16 items-center justify-center rounded-full bg-vurgu text-vurgu-yazi disabled:opacity-60"
                 type="button"
                 onClick={oynatDurdur}
                 disabled={durum.t !== "hazir"}
                 aria-label={caliyor ? "Duraklat" : "Sesi dinle"}
-                className="flex size-16 items-center justify-center rounded-full bg-vurgu text-vurgu-yazi disabled:opacity-60"
               >
                 <OynatIkonu caliyor={caliyor} />
               </button>
