@@ -81,7 +81,7 @@ export default function AliciEkrani({
           {kart.from ? <figcaption className="mt-3 font-baslik italic text-ikincil">— {kart.from}</figcaption> : null}
         </figure>
 
-        <TepkiSatiri gonderenEki={gonderenEki} />
+        <TepkiSatiri gonderen={kart.from} gonderenEki={gonderenEki} alici={kart.to} />
 
         {ses ? (
           <p className="mt-3 text-center">
