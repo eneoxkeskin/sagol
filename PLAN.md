@@ -37,7 +37,7 @@ type DefterKaydi = { id: string; tur: "gonderilen" | "alinan"; d: string; kart: 
 - [x] **M2 — Yaz + Paylaş ekranı (60 dk)**: `src/components/Kart.tsx` (saf görünüm, 4 tema), `src/app/page.tsx` + istemci form bileşeni. Çipler (6): boş mesajı doldurur, doluysa sona ekler. Kalan karakter sayacı. `?z=` okunur. Paylaş adımı: `navigator.share` (yoksa gizle), `https://wa.me/?text=`, panoya kopyala (`aria-live` "Kopyalandı").
   Bitti sayılır: 20 sn'de kart linki üretilir; boş "Kime"/mesajla buton pasif; mobil 360px'te taşma yok.
   Not: layout'ta `lang="tr"`, metadata Türkçe, font `subsets: ["latin","latin-ext"]` (şu an sadece latin → ğşı yedek fonta düşer).
-- [ ] **M3 — Kart sayfası (45 dk)**: `src/app/k/[d]/page.tsx` (sunucu, `await params`, `decodeCard`), `generateMetadata` (başlık: "<Kime> için bir teşekkür"), açılış animasyonu (`motion-safe:`), zincir halkası metni, "Defterime kaydet" (istemci), "Sen de birine teşekkür et" → `/?z=n+1`, bozuk link durumu.
+- [x] **M3 — Kart sayfası (45 dk)**: `src/app/k/[d]/page.tsx` (sunucu, `await params`, `decodeCard`), `generateMetadata` (başlık: "<Kime> için bir teşekkür"), açılış animasyonu (`motion-safe:`), zincir halkası metni, "Defterime kaydet" (istemci), "Sen de birine teşekkür et" → `/?z=n+1`, bozuk link durumu.
   Bitti sayılır: M2 linki açılır; `/k/abc`, `/k/<3000 karakter>` nazik hata verir; `<script>` metni düz yazı görünür.
   Not: `z=1` ise zincir cümlesi hiç gösterilmez. Mesaj `whitespace-pre-line` ile düz metin; URL'ler link yapılmaz.
 - [ ] **M4 — OG görseli (45 dk)**: `src/app/k/[d]/opengraph-image.tsx` (`ImageResponse` from `next/og`, 1200×630, yalnızca flexbox), tema renkleri, mesaj ilk ~120 karakter + "…", bozuk veride genel SağOl görseli.
@@ -60,3 +60,4 @@ type DefterKaydi = { id: string; tur: "gonderilen" | "alinan"; d: string; kart: 
 - (plan) Test için ek paket yok: Node 26 yerleşik TS + `node:test` (scratch'te doğrulandı).
 - (M1) kesKodNoktasi/kodNoktasiUzunlugu yardımcıları card.ts içinde dışa açıldı (M2 formu kullanır). Node MODULE_TYPELESS uyarısı zararsız; "type":"module" Next config dosyalarını etkileyebileceği için eklenmedi.
 - (M2) Açık/koyu tema yerine tek sıcak açık tema (AA kontrast garantisi için). `?z=` okuması Suspense içinde (cacheComponents prerender hatası). Link 1200 karakteri aşarsa form nazik uyarı verir. Defter kaydı M5.
+- (M3) "Defterime kaydet" düğmesi M5e bırakıldı: defter.ts henüz yok, M5 düğmeyi kart sayfasına ekler. Kart sayfası Suspense içinde params okur (cacheComponents). Geçersiz link 200 ile nazik hata ekranı gösterir.
