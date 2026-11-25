@@ -34,7 +34,7 @@ type DefterKaydi = { id: string; tur: "gonderilen" | "alinan"; d: string; kart: 
 - [x] **M1 — Kart çekirdeği (45 dk)**: `src/lib/card.ts` (`encodeCard`, `decodeCard`, `TEMALAR`, limitler), `src/lib/card.test.ts`, `package.json`'a `"test": "node --test src/**/*.test.ts"`, tsconfig'e `"allowImportingTsExtensions": true`.
   Bitti sayılır: `npm test` geçer; "ğşıİöüç 🙏" gidiş-dönüş eşit; bozuk base64, boş, 1201+ karakter, yanlış şema, `v≠1` → `null`.
   Not: `TextEncoder`+`btoa` kullan (tarayıcı ve sunucuda aynı). Test dosyası `./card.ts` uzantılı import eder. Decode'da NFC normalize, trim, kontrol karakterlerini (\n hariç) sil, 3+ satır boşluğunu 2'ye indir; bilinmeyen tema → "sabah"; `z` sınır dışı → 1.
-- [ ] **M2 — Yaz + Paylaş ekranı (60 dk)**: `src/components/Kart.tsx` (saf görünüm, 4 tema), `src/app/page.tsx` + istemci form bileşeni. Çipler (6): boş mesajı doldurur, doluysa sona ekler. Kalan karakter sayacı. `?z=` okunur. Paylaş adımı: `navigator.share` (yoksa gizle), `https://wa.me/?text=`, panoya kopyala (`aria-live` "Kopyalandı").
+- [x] **M2 — Yaz + Paylaş ekranı (60 dk)**: `src/components/Kart.tsx` (saf görünüm, 4 tema), `src/app/page.tsx` + istemci form bileşeni. Çipler (6): boş mesajı doldurur, doluysa sona ekler. Kalan karakter sayacı. `?z=` okunur. Paylaş adımı: `navigator.share` (yoksa gizle), `https://wa.me/?text=`, panoya kopyala (`aria-live` "Kopyalandı").
   Bitti sayılır: 20 sn'de kart linki üretilir; boş "Kime"/mesajla buton pasif; mobil 360px'te taşma yok.
   Not: layout'ta `lang="tr"`, metadata Türkçe, font `subsets: ["latin","latin-ext"]` (şu an sadece latin → ğşı yedek fonta düşer).
 - [ ] **M3 — Kart sayfası (45 dk)**: `src/app/k/[d]/page.tsx` (sunucu, `await params`, `decodeCard`), `generateMetadata` (başlık: "<Kime> için bir teşekkür"), açılış animasyonu (`motion-safe:`), zincir halkası metni, "Defterime kaydet" (istemci), "Sen de birine teşekkür et" → `/?z=n+1`, bozuk link durumu.
@@ -59,3 +59,4 @@ type DefterKaydi = { id: string; tur: "gonderilen" | "alinan"; d: string; kart: 
 - (plan) Alıcı da kartı Defter'e kaydedebilir: geri dönme nedeni "aldığım teşekkürler", streak değil.
 - (plan) Test için ek paket yok: Node 26 yerleşik TS + `node:test` (scratch'te doğrulandı).
 - (M1) kesKodNoktasi/kodNoktasiUzunlugu yardımcıları card.ts içinde dışa açıldı (M2 formu kullanır). Node MODULE_TYPELESS uyarısı zararsız; "type":"module" Next config dosyalarını etkileyebileceği için eklenmedi.
+- (M2) Açık/koyu tema yerine tek sıcak açık tema (AA kontrast garantisi için). `?z=` okuması Suspense içinde (cacheComponents prerender hatası). Link 1200 karakteri aşarsa form nazik uyarı verir. Defter kaydı M5.
