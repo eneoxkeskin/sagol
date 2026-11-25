@@ -31,7 +31,18 @@ function onizleme(s: string): string {
 const bosAbone = () => () => {};
 const saatSnapshot = () => Math.floor(Date.now() / 3600000) * 3600;
 
-const kucuk ="rounded-full border-2 border-stone-600 px-3 py-1 text-sm font-semibold";
+const SEKMELER = [
+  ["gonderilen", "Gönderdiklerim"],
+  ["alinan", "Aldıklarım"],
+] as const;
+
+const tarihBicimi = new Intl.DateTimeFormat("tr-TR", {
+  day: "numeric",
+  month: "long",
+  timeZone: "Europe/Istanbul",
+});
+
+const kucuk = "rounded-full border-2 border-stone-600 px-3 py-1 text-sm font-semibold";
 
 export default function DefterSayfasi() {
   const liste = useDefter();
@@ -55,10 +66,10 @@ export default function DefterSayfasi() {
         {ozet(liste, simdi)}
       </p>
 
-      {liste.length >= 3 ? (
+      {liste.length >= 1 ? (
         <section className="mt-6">
           <button type="button" onClick={rastgele} className={kucuk}>
-            Geçmişten bir kart
+            Rastgele bir güzel söz göster
           </button>
           {gecmis ? (
             <Kart
@@ -72,18 +83,25 @@ export default function DefterSayfasi() {
         </section>
       ) : null}
 
-      <div className="mt-8 flex gap-2" role="group" aria-label="Liste">
-        {(
-          [
-            ["gonderilen", "Gönderdiklerim"],
-            ["alinan", "Aldıklarım"],
-          ] as const
-        ).map(([t, etiket]) => (
+      <div className="mt-8 flex gap-2" role="tablist" aria-label="Liste">
+        {SEKMELER.map(([t, etiket]) => (
           <button
             key={t}
+            id={`sekme-${t}`}
             type="button"
-            aria-pressed={sekme === t}
+            role="tab"
+            aria-selected={sekme === t}
+            aria-controls="sekme-panel"
+            tabIndex={sekme === t ? 0 : -1}
             onClick={() => setSekme(t)}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "Home" || e.key === "End") {
+                e.preventDefault();
+                const yeni = SEKMELER.find(([x]) => x !== t)?.[0] ?? t;
+                setSekme(yeni);
+                document.getElementById(`sekme-${yeni}`)?.focus();
+              }
+            }}
             className={`${kucuk} ${sekme === t ? "bg-stone-800 text-white" : "bg-white"}`}
           >
             {etiket}
@@ -91,6 +109,7 @@ export default function DefterSayfasi() {
         ))}
       </div>
 
+      <div id="sekme-panel" role="tabpanel" aria-labelledby={`sekme-${sekme}`}>
       {gorunen.length === 0 ? (
         <p className="mt-4 text-muted">
           {sekme === "gonderilen"
@@ -103,6 +122,13 @@ export default function DefterSayfasi() {
             <li key={k.id} className="rounded-2xl border-2 border-stone-300 bg-white p-4">
               <p className="break-words font-bold">{k.kart.to}</p>
               <p className="mt-1 whitespace-pre-line break-words">{onizleme(k.kart.msg)}</p>
+              {k.sesBitis !== undefined ? (
+                <p className="mt-1 text-sm text-muted">
+                  {k.sesBitis > simdi
+                    ? `Ses kaydı ${tarihBicimi.format(new Date(k.sesBitis * 1000))} tarihine kadar dinlenebilir.`
+                    : "Ses süresi doldu; yazılı hali burada."}
+                </p>
+              ) : null}
               <div className="mt-3 flex gap-2">
                 <Link href={`/k/${k.d}`} className={kucuk}>
                   Aç
@@ -115,6 +141,7 @@ export default function DefterSayfasi() {
           ))}
         </ul>
       )}
+      </div>
 
       {liste.length > 0 ? (
         <div className="mt-8">

@@ -28,10 +28,10 @@ export default function Home({ searchParams }: PageProps<"/">) {
         <ParametreliForm searchParams={searchParams} />
       </Suspense>
       <Link
-        href="/defter"
+        href="/sakladiklarim"
         className="mt-8 inline-block font-semibold underline underline-offset-4"
       >
-        Defterim
+        Sakladıklarım
       </Link>
     </main>
   );

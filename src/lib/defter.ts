@@ -10,6 +10,8 @@ export type DefterKaydi = {
   d: string;
   kart: Kart;
   at: number;
+  /** Ses kaydının silineceği an (unix sn), varsa. */
+  sesBitis?: number;
 };
 
 /** localStorage'daki ham metin; erişilemezse boş dizi metni. Sabit (primitive) döner. */
@@ -39,7 +41,11 @@ export function ayristir(ham: string): DefterKaydi[] {
       if (typeof r.at !== "number" || !Number.isFinite(r.at)) continue;
       const kart = decodeCard(r.d);
       if (!kart) continue;
-      sonuc.push({ id: r.id, tur: r.tur, d: r.d, kart, at: r.at });
+      const kayit: DefterKaydi = { id: r.id, tur: r.tur, d: r.d, kart, at: r.at };
+      if (typeof r.sesBitis === "number" && Number.isFinite(r.sesBitis)) {
+        kayit.sesBitis = r.sesBitis;
+      }
+      sonuc.push(kayit);
     }
     return sonuc.slice(0, DEFTER_ENFAZLA);
   } catch {
@@ -63,7 +69,7 @@ function yaz(liste: DefterKaydi[]): boolean {
   try {
     const sade = liste
       .slice(0, DEFTER_ENFAZLA)
-      .map(({ id, tur, d, kart, at }) => ({ id, tur, d, kart, at }));
+      .map(({ id, tur, d, kart, at, sesBitis }) => ({ id, tur, d, kart, at, sesBitis }));
     window.localStorage.setItem(DEFTER_ANAHTAR, JSON.stringify(sade));
     window.dispatchEvent(new Event(OLAY));
     return true;
@@ -73,12 +79,13 @@ function yaz(liste: DefterKaydi[]): boolean {
 }
 
 /** Aynı `d` tekrar eklenmez. Eklendiyse true. */
-export function ekle(tur: DefterKaydi["tur"], d: string): boolean {
+export function ekle(tur: DefterKaydi["tur"], d: string, sesBitis?: number): boolean {
   const kart = decodeCard(d);
   if (!kart) return false;
   const liste = ayristir(hamOku());
   if (liste.some((k) => k.d === d)) return false;
   const kayit: DefterKaydi = { id: d, tur, d, kart, at: Math.floor(Date.now() / 1000) };
+  if (sesBitis !== undefined) kayit.sesBitis = sesBitis;
   return yaz([kayit, ...liste]);
 }
 
