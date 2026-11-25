@@ -44,9 +44,11 @@ const alan =
 export default function YaziFormu({
   h,
   baslangicKime = "",
+  sayac = false,
 }: {
   h: number;
   baslangicKime?: string;
+  sayac?: boolean;
 }) {
   const [to, setTo] = useState(baslangicKime);
   const [msg, setMsg] = useState("");
@@ -81,6 +83,10 @@ export default function YaziFormu({
     }
     setDurum("");
     ekle("gonderilen", d);
+    if (sayac) {
+      // Anonim günlük sayaç; gövde yok. Hata akışı etkilemez.
+      fetch("/api/sayac", { method: "POST", keepalive: true }).catch(() => {});
+    }
     setLink(`${window.location.origin}/k/${d}`);
   }
 

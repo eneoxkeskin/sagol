@@ -1,7 +1,10 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import YaziFormu from "@/components/YaziFormu";
 import { temizleAd } from "@/lib/card";
+import { sayacAcik } from "@/lib/ozellik";
+import { bugunSayisi } from "@/lib/sayac";
 
 function ilk(v: string | string[] | undefined): string | undefined {
   return Array.isArray(v) ? v[0] : v;
@@ -15,7 +18,19 @@ async function ParametreliForm({
   const n = Number(ilk(sp.h) ?? ilk(sp.z));
   const h = Number.isInteger(n) && n >= 1 && n <= 999 ? n : 1;
   const kime = temizleAd(ilk(sp.to) ?? "");
-  return <YaziFormu h={h} baslangicKime={kime} />;
+  return <YaziFormu h={h} baslangicKime={kime} sayac={sayacAcik()} />;
+}
+
+async function BugunSayaci() {
+  if (!sayacAcik()) return null;
+  await connection();
+  const n = await bugunSayisi();
+  if (n === null || n < 1) return null;
+  return (
+    <p className="mt-2 text-base text-muted">
+      Bugün {n.toLocaleString("tr-TR")} teşekkür edildi.
+    </p>
+  );
 }
 
 export default function Home({ searchParams }: PageProps<"/">) {
@@ -24,6 +39,9 @@ export default function Home({ searchParams }: PageProps<"/">) {
       <h1 className="text-3xl font-extrabold leading-tight">
         Bugün kime teşekkür etmek istersin?
       </h1>
+      <Suspense fallback={null}>
+        <BugunSayaci />
+      </Suspense>
       <Suspense fallback={null}>
         <ParametreliForm searchParams={searchParams} />
       </Suspense>
