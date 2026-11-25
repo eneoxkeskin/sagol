@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import Kart from "@/components/Kart";
+import KaydetDugmesi from "@/components/KaydetDugmesi";
 import { decodeCard } from "@/lib/card";
 
 export async function generateMetadata({
@@ -59,6 +60,7 @@ async function KartGorunumu({ params }: Pick<PageProps<"/k/[d]">, "params">) {
         >
           Sen de birine teşekkür et
         </Link>
+        <KaydetDugmesi d={d} />
       </div>
     </section>
   );

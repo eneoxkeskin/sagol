@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Suspense } from "react";
 import YaziFormu from "@/components/YaziFormu";
 
@@ -18,6 +19,12 @@ export default function Home({ searchParams }: PageProps<"/">) {
       <Suspense fallback={null}>
         <ZliForm searchParams={searchParams} />
       </Suspense>
+      <Link
+        href="/defter"
+        className="mt-8 inline-block font-semibold underline underline-offset-4"
+      >
+        Defterim
+      </Link>
     </main>
   );
 }

@@ -10,6 +10,7 @@ import {
   kodNoktasiUzunlugu,
   type Tema,
 } from "@/lib/card";
+import { ekle } from "@/lib/defter";
 
 const IPUCLARI = [
   "Zor günümde yanımda olduğun için…",
@@ -73,6 +74,7 @@ export default function YaziFormu({ z }: { z: number }) {
       return;
     }
     setDurum("");
+    ekle("gonderilen", d);
     setLink(`${window.location.origin}/k/${d}`);
   }
 
