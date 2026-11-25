@@ -64,9 +64,12 @@ export default function AliciEkrani({ kart, d }: { kart: Kart; d: string }) {
           </Link>
           <KaydetDugmesi d={d} />
         </div>
-        <p className="mt-6 text-center">
+        <p className="mt-6 flex justify-center gap-6">
           <Link href="/" className="text-sm font-semibold underline underline-offset-4">
             SağOl
+          </Link>
+          <Link href="/hakkinda" className="text-sm font-semibold underline underline-offset-4">
+            Hakkında
           </Link>
         </p>
       </div>

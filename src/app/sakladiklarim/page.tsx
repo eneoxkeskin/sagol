@@ -18,6 +18,12 @@ export default function DefterPage() {
       <Link href="/" className="mt-8 inline-block font-semibold underline underline-offset-4">
         Yeni kart yaz
       </Link>
+      <Link
+        href="/hakkinda"
+        className="mt-8 ml-6 inline-block font-semibold underline underline-offset-4"
+      >
+        Hakkında
+      </Link>
     </main>
   );
 }
