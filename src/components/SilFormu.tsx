@@ -48,7 +48,7 @@ export default function SilFormu() {
             type="button"
             onClick={sil}
             disabled={bitti}
-            className="mt-5 rounded-full bg-stone-800 px-5 py-3 text-lg font-bold text-white disabled:bg-stone-300 disabled:text-stone-700"
+            className="mt-5 inline-flex h-14 items-center justify-center rounded-[28px] bg-vurgu px-6 text-lg font-bold text-vurgu-yazi disabled:opacity-50"
           >
             Sesi sil
           </button>

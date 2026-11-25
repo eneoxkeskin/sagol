@@ -27,13 +27,13 @@ async function KartGorunumu({ params }: Pick<PageProps<"/k/[d]">, "params">) {
     return (
       <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8">
         <section className="mt-8 text-center">
-          <h1 className="text-2xl font-extrabold">Bu kartı açamadık</h1>
-          <p className="mt-3 text-lg text-muted">
+          <h1 className="text-2xl font-baslik font-semibold">Bu kartı açamadık</h1>
+          <p className="mt-3 text-lg text-ikincil">
             Link eksik ya da bozulmuş olabilir. İstersen yeni bir teşekkür yaz.
           </p>
           <Link
             href="/"
-            className="mt-6 inline-block rounded-full bg-stone-800 px-5 py-3 font-bold text-white"
+            className="mt-6 inline-flex h-14 items-center justify-center rounded-[28px] bg-vurgu px-6 text-lg font-bold text-vurgu-yazi"
           >
             Yeni kart yaz
           </Link>

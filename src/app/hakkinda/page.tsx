@@ -7,14 +7,14 @@ export const metadata: Metadata = {
   description: "Neleri saklıyoruz, neleri saklamıyoruz, nasıl yapıldı.",
 };
 
-const h2 = "mt-10 text-xl font-extrabold";
+const h2 = "mt-10 text-xl font-baslik font-semibold";
 const liste = "mt-3 list-disc space-y-2 pl-6 text-lg leading-relaxed";
 
 export default function Hakkinda() {
   const ses = sesAcik();
   return (
     <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8">
-      <h1 className="text-3xl font-extrabold leading-tight">Hakkında</h1>
+      <h1 className="text-3xl font-baslik font-semibold leading-tight">Hakkında</h1>
       <p className="mt-3 text-lg leading-relaxed">
         SağOl, birine kısa bir teşekkür yazmanın (ya da söylemenin) en az
         sürtünmeli yolu olmaya çalışıyor. Bu sayfa, bunun için neyi nasıl
@@ -66,17 +66,27 @@ export default function Hakkinda() {
       <h2 className={h2}>Nasıl yapıldı</h2>
       <ul className={liste}>
         <li>Kartın tamamı linkin içinde: mesaj sunucuya değil, URL’ye kodlanır. Linki alan kartı görür.</li>
-        <li>Geçmiş cihazda: veritabanı yok, hesap yok. Eski kayıtlar şema kontrolüyle okunur, bozuksa boş liste.</li>
+        <li>Geçmiş cihazda: hesap yok, liste yalnızca tarayıcında durur. Eski kayıtlar şema kontrolüyle okunur, bozuksa boş liste.</li>
         <li>Ses ve sayaç, veritabanı bağlantısı varsa açılan bir özellik; yoksa arayüzde hiç görünmez, gerisi çalışır.</li>
         <li>Ses: en çok 20 sn, küçük boyut, tahmin edilemez id, listeleme yok, süre dolunca silinir.</li>
         <li>Hareket yalnızca anlam taşıyorsa var ve “hareketi azalt” ayarına uyar; otomatik ses ya da titreşim yok.</li>
+        <li>
+          Ses halkası: kaydın 20 saniyesi 48 dilime bölünür, her dilimin en yüksek sesi bir çubuk olur. Bu 48 sayı
+          kartın linkinde taşınır; ses 7 gün sonra silinse de kartın halkası aynı kalır. Sesi olmayan kartlarda halka,
+          isim ve mesajdan üretilir: iki kart aynı görünmez.
+        </li>
+        <li>
+          Story ve paylaşım görseli yalnızca kartta zaten görünenleri içerir: isimler, tarih, mesajın başı, halka ve
+          çıkartmalar. Ses kaydı, silme linki ya da başka bir bilgi görselde yer almaz.
+        </li>
+        <li>Tepkiler de bir linktir: seçtiğin tepki yalnızca linkin içinde durur, sunucuda saklanmaz.</li>
       </ul>
 
       <p className="mt-10 flex gap-6">
-        <Link href="/" className="font-semibold underline underline-offset-4">
+        <Link href="/" className="inline-flex min-h-11 items-center font-medium underline underline-offset-4">
           Yeni kart yaz
         </Link>
-        <Link href="/sakladiklarim" className="font-semibold underline underline-offset-4">
+        <Link href="/sakladiklarim" className="inline-flex min-h-11 items-center font-medium underline underline-offset-4">
           Sakladıklarım
         </Link>
       </p>

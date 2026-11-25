@@ -24,7 +24,7 @@ export default function TaslakYardimcisi({ onSec }: { onSec: (metin: string) => 
       <button
         type="button"
         onClick={() => setAcik(true)}
-        className="rounded-full border-2 border-stone-400 bg-white px-3 py-1 text-sm font-semibold"
+        className="inline-flex min-h-11 items-center text-[15px] font-medium underline underline-offset-4"
       >
         Nasıl başlayacağımı bilmiyorum
       </button>
@@ -32,11 +32,11 @@ export default function TaslakYardimcisi({ onSec }: { onSec: (metin: string) => 
   }
 
   return (
-    <section className="rounded-2xl border-2 border-stone-300 bg-white p-4">
+    <section className="rounded-[22px] bg-kutu p-4">
       <label className="block font-bold">
         Ne hissettiğini kendi kelimelerinle yaz
         <input
-          className="mt-1 w-full rounded-xl border-2 border-stone-400 bg-white px-3 py-2 text-base font-normal"
+          className="mt-1 min-h-11 w-full rounded-[22px] border-2 border-murekkep bg-transparent px-3 py-2 text-base font-normal"
           value={ham}
           onChange={(e) => setHam(e.target.value)}
         />
@@ -45,18 +45,18 @@ export default function TaslakYardimcisi({ onSec }: { onSec: (metin: string) => 
         type="button"
         onClick={oner}
         disabled={!ham.trim() || bekliyor}
-        className="mt-3 rounded-full border-2 border-stone-700 px-4 py-2 font-bold disabled:border-stone-400 disabled:text-stone-700"
+        className="mt-3 inline-flex min-h-11 items-center rounded-[22px] border-2 border-murekkep px-4 font-bold disabled:opacity-50"
       >
         Taslak öner
       </button>
-      <p className="mt-2 text-sm text-muted">Yazdıkların cihazından çıkmaz.</p>
+      <p className="mt-2 text-sm text-ikincil">Yazdıkların cihazından çıkmaz.</p>
       <ul className="mt-3 flex flex-col gap-2" aria-live="polite">
         {oneriler.map((s) => (
           <li key={s}>
             <button
               type="button"
               onClick={() => onSec(s)}
-              className="w-full rounded-xl border-2 border-stone-300 px-3 py-2 text-left"
+              className="min-h-11 w-full rounded-[22px] border-2 border-murekkep px-3 py-2 text-left"
             >
               {s}
             </button>

@@ -43,8 +43,8 @@ export default function AliciEkrani({
   return (
     <main data-tema={kart.th} className="flex min-h-dvh flex-1 flex-col overflow-x-clip px-6 pb-10 pt-6">
       <div className="mx-auto flex w-full max-w-[440px] flex-1 flex-col">
-        <header className="flex items-baseline justify-between">
-          <Link href="/" className="font-baslik text-xl font-semibold">
+        <header className="flex items-center justify-between">
+          <Link href="/" className="inline-flex min-h-11 items-center font-baslik text-xl font-semibold">
             SağOl
           </Link>
           <span className="text-sm text-ikincil">{tarih}</span>

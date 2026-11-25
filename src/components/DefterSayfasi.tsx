@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
-import Kart from "@/components/Kart";
+import CikartmaKatmani from "@/components/CikartmaKatmani";
+import KartOnizleme from "@/components/KartOnizleme";
+import SoundRing from "@/components/SoundRing";
+import { peaksCoz, tohum } from "@/lib/halka";
 import { kesKodNoktasi, kodNoktasiUzunlugu } from "@/lib/card";
 import { sil, tumunuSil, type DefterKaydi } from "@/lib/defter";
 import { useDefter } from "@/lib/useDefter";
@@ -42,7 +45,8 @@ const tarihBicimi = new Intl.DateTimeFormat("tr-TR", {
   timeZone: "Europe/Istanbul",
 });
 
-const kucuk = "rounded-full border-2 border-stone-600 px-3 py-1 text-sm font-semibold";
+const kucukTemel = "inline-flex min-h-11 items-center rounded-[22px] px-4 text-[15px] font-medium";
+const kucuk = `${kucukTemel} border-2 border-murekkep`;
 
 export default function DefterSayfasi() {
   const liste = useDefter();
@@ -72,13 +76,16 @@ export default function DefterSayfasi() {
             Rastgele bir güzel söz göster
           </button>
           {gecmis ? (
-            <Kart
+            <KartOnizleme
               className="mt-4"
               to={gecmis.kart.to}
               msg={gecmis.kart.msg}
               from={gecmis.kart.from}
               th={gecmis.kart.th}
-            />
+              peaks={peaksCoz(gecmis.kart.p)}
+            >
+              {gecmis.kart.st ? <CikartmaKatmani st={gecmis.kart.st} /> : null}
+            </KartOnizleme>
           ) : null}
         </section>
       ) : null}
@@ -102,7 +109,7 @@ export default function DefterSayfasi() {
                 document.getElementById(`sekme-${yeni}`)?.focus();
               }
             }}
-            className={`${kucuk} ${sekme === t ? "bg-stone-800 text-white" : "bg-white"}`}
+            className={`${kucukTemel} ${sekme === t ? "bg-vurgu text-vurgu-yazi" : "bg-kutu"}`}
           >
             {etiket}
           </button>
@@ -111,7 +118,7 @@ export default function DefterSayfasi() {
 
       <div id="sekme-panel" role="tabpanel" aria-labelledby={`sekme-${sekme}`}>
       {gorunen.length === 0 ? (
-        <p className="mt-4 text-muted">
+        <p className="mt-4 text-ikincil">
           {sekme === "gonderilen"
             ? "Yazdığın teşekkürler burada duracak."
             : "Kaydettiğin teşekkürler burada duracak."}
@@ -119,18 +126,29 @@ export default function DefterSayfasi() {
       ) : (
         <ul className="mt-4 flex flex-col gap-3">
           {gorunen.map((k) => (
-            <li key={k.id} className="rounded-2xl border-2 border-stone-300 bg-white p-4">
-              <p className="break-words font-bold">{k.kart.to}</p>
+            <li key={k.id} className="flex gap-4 rounded-[22px] bg-kutu p-4">
+              <SoundRing
+                size={56}
+                n={22}
+                strokeWidth={2.5}
+                peaks={peaksCoz(k.kart.p)}
+                seed={tohum(k.kart.to, k.kart.msg)}
+                progress={1}
+                colorOn="var(--murekkep)"
+                className="shrink-0"
+              />
+              <div className="min-w-0 flex-1">
+              <p className="break-words font-baslik text-lg font-semibold">{k.kart.to}</p>
               <p className="mt-1 whitespace-pre-line break-words">{onizleme(k.kart.msg)}</p>
               {k.sesBitis !== undefined ? (
-                <p className="mt-1 text-sm text-muted">
+                <p className="mt-1 text-sm text-ikincil">
                   {k.sesBitis > simdi
                     ? `Ses kaydı ${tarihBicimi.format(new Date(k.sesBitis * 1000))} tarihine kadar dinlenebilir.`
                     : "Ses süresi doldu; yazılı hali burada."}
                   {k.silLink && k.sesBitis > simdi ? (
                     <>
                       {" "}
-                      <a href={k.silLink} className="font-semibold underline underline-offset-4">
+                      <a href={k.silLink} className="inline-flex min-h-11 items-center font-medium underline underline-offset-4">
                         Sesi sil
                       </a>
                     </>
@@ -144,6 +162,7 @@ export default function DefterSayfasi() {
                 <button type="button" onClick={() => sil(k.id)} className={kucuk}>
                   Sil
                 </button>
+              </div>
               </div>
             </li>
           ))}
@@ -175,7 +194,7 @@ export default function DefterSayfasi() {
             <button
               type="button"
               onClick={() => setOnay(true)}
-              className="text-sm font-semibold underline underline-offset-4"
+              className="inline-flex min-h-11 items-center text-[15px] font-medium underline underline-offset-4"
             >
               Tümünü sil
             </button>

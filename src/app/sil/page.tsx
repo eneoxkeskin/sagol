@@ -12,7 +12,7 @@ export default function SilSayfasi() {
   if (!sesAcik()) notFound();
   return (
     <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8">
-      <h1 className="text-3xl font-extrabold leading-tight">Ses kaydını sil</h1>
+      <h1 className="text-3xl font-baslik font-semibold leading-tight">Ses kaydını sil</h1>
       <SilFormu />
     </main>
   );

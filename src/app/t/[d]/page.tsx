@@ -68,7 +68,7 @@ export default function TepkiSayfasi({ params }: PageProps<"/t/[d]">) {
     <main className="flex min-h-dvh flex-1 flex-col px-6 pb-10 pt-6">
       <div className="mx-auto w-full max-w-[440px]">
         <header>
-          <Link href="/" className="font-baslik text-xl font-semibold">
+          <Link href="/" className="inline-flex min-h-11 items-center font-baslik text-xl font-semibold">
             SağOl
           </Link>
         </header>

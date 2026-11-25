@@ -219,7 +219,7 @@ export default function YaziFormu({
 
   const ustSerit = (
     <header className="flex items-center justify-between">
-      <Link href="/" className="font-baslik text-xl font-semibold">
+      <Link href="/" className="inline-flex min-h-11 items-center font-baslik text-xl font-semibold">
         SağOl
       </Link>
       {adim === "yaz" ? <TemaSecici th={th} setTh={setTh} /> : null}
