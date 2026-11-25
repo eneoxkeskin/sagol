@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { ayristir } from "./defter.ts";
 import { encodeCard } from "./card.ts";
 
-const d = encodeCard({ v: 1, to: "Ayşe", msg: "Sağ ol", th: "cay", z: 1, t: 1 });
+const d = encodeCard({ v: 1, to: "Ayşe", msg: "Sağ ol", th: "cay", h: 1, t: 1 });
 
 test("bozuk ham veri boş liste verir", () => {
   assert.deepEqual(ayristir("{bozuk"), []);

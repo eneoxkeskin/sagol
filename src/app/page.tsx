@@ -1,13 +1,21 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import YaziFormu from "@/components/YaziFormu";
+import { temizleAd } from "@/lib/card";
 
-async function ZliForm({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
+function ilk(v: string | string[] | undefined): string | undefined {
+  return Array.isArray(v) ? v[0] : v;
+}
+
+async function ParametreliForm({
+  searchParams,
+}: Pick<PageProps<"/">, "searchParams">) {
   const sp = await searchParams;
-  const ham = Array.isArray(sp.z) ? sp.z[0] : sp.z;
-  const n = Number(ham);
-  const z = Number.isInteger(n) && n >= 1 && n <= 999 ? n : 1;
-  return <YaziFormu z={z} />;
+  // `h` yeni, `z` eski linkler için
+  const n = Number(ilk(sp.h) ?? ilk(sp.z));
+  const h = Number.isInteger(n) && n >= 1 && n <= 999 ? n : 1;
+  const kime = temizleAd(ilk(sp.to) ?? "");
+  return <YaziFormu h={h} baslangicKime={kime} />;
 }
 
 export default function Home({ searchParams }: PageProps<"/">) {
@@ -17,7 +25,7 @@ export default function Home({ searchParams }: PageProps<"/">) {
         Bugün kime teşekkür etmek istersin?
       </h1>
       <Suspense fallback={null}>
-        <ZliForm searchParams={searchParams} />
+        <ParametreliForm searchParams={searchParams} />
       </Suspense>
       <Link
         href="/defter"

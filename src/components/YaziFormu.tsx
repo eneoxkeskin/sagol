@@ -41,8 +41,14 @@ const canShare = () => typeof navigator !== "undefined" && "share" in navigator;
 const alan =
   "mt-1 w-full rounded-xl border-2 border-stone-400 bg-white px-3 py-2 text-base";
 
-export default function YaziFormu({ z }: { z: number }) {
-  const [to, setTo] = useState("");
+export default function YaziFormu({
+  h,
+  baslangicKime = "",
+}: {
+  h: number;
+  baslangicKime?: string;
+}) {
+  const [to, setTo] = useState(baslangicKime);
   const [msg, setMsg] = useState("");
   const [from, setFrom] = useState("");
   const [th, setTh] = useState<Tema>("sabah");
@@ -66,7 +72,7 @@ export default function YaziFormu({ z }: { z: number }) {
       msg: msg.trim(),
       ...(from.trim() ? { from: from.trim() } : {}),
       th,
-      z,
+      h,
       t: Math.floor(Date.now() / 1000),
     });
     if (d.length > LIMITLER.dMax) {

@@ -7,9 +7,38 @@ export type Kart = {
   msg: string;
   from?: string;
   th: Tema;
-  z: number;
+  /** Zincir halkası 1-999 (eski linklerde `z`). */
+  h: number;
+  /** Ses kaydı id'si (22 karakter base64url), opsiyonel. */
+  s?: string;
   t: number;
 };
+
+export const SES_ID_REGEX = /^[A-Za-z0-9_-]{22}$/;
+
+/** Ad alanı temizleyici (form `?to=` için): NFC, kontrol karakteri yok, ≤40 kod noktası. */
+export function temizleAd(s: string): string {
+  return kes(temizle(s).replace(/\n/g, " "), 40).trim();
+}
+
+function halka(v: unknown): number | null {
+  return typeof v === "number" && Number.isInteger(v) && v >= 1 && v <= 999 ? v : null;
+}
+
+/** "Ayşe" → "Ayşe'ye", "Mert" → "Mert'e", "Işık" → "Işık'a". Emin olunamazsa null. */
+export function yonelmeEki(ad: string): string | null {
+  const kelime = temizle(ad).split(/\s+/).pop() ?? "";
+  const k = kelime.toLocaleLowerCase("tr");
+  if (!k || !/^\p{L}+$/u.test(k)) return null;
+  const unluler = "aeıioöuü";
+  let son: string | null = null;
+  for (const c of k) if (unluler.includes(c)) son = c;
+  if (!son) return null;
+  const kalin = "aıou".includes(son);
+  const unluyleBitiyor = unluler.includes([...k].pop() as string);
+  const ek = (unluyleBitiyor ? "y" : "") + (kalin ? "a" : "e");
+  return `${temizle(ad)}'${ek}`;
+}
 
 export const LIMITLER = {
   to: 40,
@@ -86,11 +115,11 @@ export function decodeCard(d: unknown): Kart | null {
   }
 
   const th: Tema = (TEMALAR as readonly unknown[]).includes(o.th) ? (o.th as Tema) : "sabah";
-  const z =
-    typeof o.z === "number" && Number.isInteger(o.z) && o.z >= 1 && o.z <= LIMITLER.zMax ? o.z : 1;
+  const h = halka(o.h) ?? halka(o.z) ?? 1;
 
-  const kart: Kart = { v: 1, to, msg, th, z, t: Math.floor(o.t) };
+  const kart: Kart = { v: 1, to, msg, th, h, t: Math.floor(o.t) };
   if (from) kart.from = from;
+  if (typeof o.s === "string" && SES_ID_REGEX.test(o.s)) kart.s = o.s;
   return kart;
 }
 

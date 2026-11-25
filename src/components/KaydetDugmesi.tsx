@@ -13,12 +13,12 @@ export default function KaydetDugmesi({ d }: { d: string }) {
         type="button"
         disabled={kayitli}
         onClick={() => ekle("alinan", d)}
-        className="rounded-full border-2 border-stone-700 px-5 py-3 text-center font-bold disabled:border-stone-400 disabled:text-stone-700"
+        className="rounded-full border-2 border-stone-800 px-5 py-3 text-center font-bold disabled:border-stone-600 disabled:text-stone-800"
       >
-        {kayitli ? "Defterinde" : "Defterime kaydet"}
+        {kayitli ? "Sakladıklarında" : "Sakladıklarım'a ekle"}
       </button>
       <p role="status" aria-live="polite" className="min-h-6 text-center font-semibold">
-        {kayitli ? "Defterine eklendi." : ""}
+        {kayitli ? "Sakladıklarına eklendi." : ""}
       </p>
     </>
   );
