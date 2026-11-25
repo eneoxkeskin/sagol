@@ -17,7 +17,7 @@ Soru sorma, onay isteme. Belirsizlikte makul varsayımı seç, PLAN.md "Kararlar
    - `npm test` (script varsa)
 5. "Bitti sayılır" ölçütlerini tek tek kontrol et (gerekirse build sonrası `npm run start` + `curl` ile).
 6. `PLAN.md`'de milestone kutusunu `[x]` yap.
-7. Tek commit: `git add -A && git commit -m "M<n>: <kısa özet>"`.
+7. Tek commit: `git add -A && git commit -m "M<n>: <kısa özet>"`, ardından `git push` (90 sn'de bitmezse iptal et, özete yaz). Son v2 milestone'unda PLAN.md "v2 Deploy kuralı"nı uygula.
 8. En fazla 5 satır Türkçe özet: ne yapıldı, alınan kararlar, kalan risk (varsa).
 
 ## Takılma kuralı
