@@ -1,3 +1,5 @@
+import { cikartmalariCoz, cikartmalariKodla, type Cikartma } from "./cikartma.ts";
+
 export const TEMALAR = ["sabah", "cay", "deniz", "lavanta"] as const;
 export type Tema = (typeof TEMALAR)[number];
 
@@ -14,6 +16,8 @@ export type Kart = {
   s?: string;
   /** v:2 — 48 ses genliği, base64url 64 karakter (bkz. halka.ts peaksKodla). */
   p?: string;
+  /** v:2 — çıkartmalar (URL'de sıkıştırılmış demet; bkz. cikartma.ts). */
+  st?: Cikartma[];
   t: number;
 };
 
@@ -84,8 +88,9 @@ function fromBase64Url(d: string): Uint8Array | null {
 }
 
 export function encodeCard(kart: Kart): string {
-  const json = JSON.stringify(kart);
-  return toBase64Url(new TextEncoder().encode(json));
+  const { st, ...geri } = kart;
+  const ham = st && st.length > 0 && kart.v === 2 ? { ...geri, st: cikartmalariKodla(st) } : geri;
+  return toBase64Url(new TextEncoder().encode(JSON.stringify(ham)));
 }
 
 export function decodeCard(d: unknown): Kart | null {
@@ -125,6 +130,10 @@ export function decodeCard(d: unknown): Kart | null {
   if (from) kart.from = from;
   if (typeof o.s === "string" && SES_ID_REGEX.test(o.s)) kart.s = o.s;
   if (o.v === 2 && typeof o.p === "string" && PEAKS_REGEX.test(o.p)) kart.p = o.p;
+  if (o.v === 2) {
+    const st = cikartmalariCoz(o.st);
+    if (st.length > 0) kart.st = st;
+  }
   return kart;
 }
 

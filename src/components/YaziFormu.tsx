@@ -14,7 +14,10 @@ import {
   type Kart,
   type Tema,
 } from "@/lib/card";
+import type { Cikartma } from "@/lib/cikartma";
 import { ekle } from "@/lib/defter";
+import CikartmaKatmani from "@/components/CikartmaKatmani";
+import KartSusle from "@/components/KartSusle";
 import { peaksKodla } from "@/lib/halka";
 import { TEMA_AD, TEMA_RENK } from "@/lib/tema";
 
@@ -90,7 +93,8 @@ export default function YaziFormu({
   /** Sunucudan gelen küçük içerik (ör. "Bugün N teşekkür edildi"). */
   ust?: ReactNode;
 }) {
-  const [adim, setAdim] = useState<"yaz" | "hazir">("yaz");
+  const [adim, setAdim] = useState<"yaz" | "susle" | "hazir">("yaz");
+  const [st, setSt] = useState<Cikartma[]>([]);
   const [paylasildi, setPaylasildi] = useState(false);
   const [kayit, setKayit] = useState<SesKaydi | null>(null);
   const [yuklenen, setYuklenen] = useState<Yuklenen | null>(null);
@@ -101,6 +105,8 @@ export default function YaziFormu({
   const [from, setFrom] = useState("");
   const [th, setTh] = useState<Tema>("sabah");
   const [link, setLink] = useState<string | null>(null);
+  /** Hazır adımında gösterilen, karta gerçekten yazılan çıkartmalar ("Atla" ise boş). */
+  const [kartSt, setKartSt] = useState<Cikartma[]>([]);
   const [durum, setDurum] = useState("");
   const paylasilabilir = useSyncExternalStore(bosAbone, canShare, () => false);
 
@@ -137,19 +143,29 @@ export default function YaziFormu({
     }
   }
 
-  /** Sesi (varsa) yükler; kartı kodlar, deftere ekler, linki hazırlar. */
+  /** 1. adım: sesi (varsa) yükler, süsleme adımına geçer. */
   async function olustur() {
     if (!hazir || yukleniyor) return;
-    let ek = yuklenen;
-    let not = "";
-    if (ses && kayit && !ek) {
+    if (ses && kayit && !yuklenen) {
       setYukleniyor(true);
       setDurum("Ses hazırlanıyor…");
-      ek = await sesiYukle(kayit);
+      const ek = await sesiYukle(kayit);
       setYukleniyor(false);
-      if (ek) setYuklenen(ek);
-      else not = "Ses yüklenemedi; kartın yazılı olarak hazır.";
+      if (ek) {
+        setYuklenen(ek);
+        setDurum("");
+      } else {
+        setDurum("Ses yüklenemedi; kartın yazılı olarak gidecek.");
+      }
+    } else {
+      setDurum("");
     }
+    setAdim("susle");
+  }
+
+  /** 2. adım: kartı kodlar, deftere ekler, linki hazırlar. */
+  function bitir(cikartmalar: Cikartma[]) {
+    const ek = yuklenen;
     const kart: Kart = {
       v: 2,
       to: kime,
@@ -159,6 +175,7 @@ export default function YaziFormu({
       h,
       ...(ek ? { s: ek.id } : {}),
       ...(ek && kayit ? { p: peaksKodla(kayit.peaks) } : {}),
+      ...(cikartmalar.length > 0 ? { st: cikartmalar } : {}),
       t: Math.floor(Date.now() / 1000),
     };
     const d = encodeCard(kart);
@@ -166,7 +183,7 @@ export default function YaziFormu({
       setDurum("Kart biraz uzun oldu. Mesajı ya da adları kısaltır mısın?");
       return;
     }
-    setDurum(not);
+    setDurum("");
     const sil = ek ? `${window.location.origin}/sil#${ek.id}.${ek.token}` : null;
     setSilLink(sil);
     ekle("gonderilen", d, ek?.bitis, sil ?? undefined);
@@ -174,6 +191,7 @@ export default function YaziFormu({
       // Anonim günlük sayaç; gövde yok. Hata akışı etkilemez.
       fetch("/api/sayac", { method: "POST", keepalive: true }).catch(() => {});
     }
+    setKartSt(cikartmalar);
     setLink(`${window.location.origin}/k/${d}`);
     setAdim("hazir");
   }
@@ -208,6 +226,35 @@ export default function YaziFormu({
     </header>
   );
 
+  if (adim === "susle") {
+    return (
+      <div data-tema={th} className="flex min-h-dvh flex-1 flex-col px-6 pb-10 pt-6">
+        <div className="mx-auto w-full max-w-[440px]">
+          {ustSerit}
+          <KartSusle
+            to={kime}
+            msg={msg.trim()}
+            from={from.trim() || undefined}
+            th={th}
+            peaks={sesPeaks}
+            st={st}
+            setSt={setSt}
+            onBitti={() => bitir(st)}
+            onAtla={() => bitir([])}
+          />
+          <p role="status" aria-live="polite" className="mt-2 min-h-6 text-center font-medium">
+            {durum}
+          </p>
+          <p className="text-center">
+            <button type="button" onClick={() => setAdim("yaz")} className={metinLink}>
+              Yazıya dön
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (adim === "hazir" && link) {
     const wa = `https://wa.me/?text=${encodeURIComponent(`${kime} için bir teşekkür yazdım: ${link}`)}`;
     return (
@@ -218,7 +265,9 @@ export default function YaziFormu({
             <h1 ref={(el) => el?.focus()} tabIndex={-1} className="mb-5 font-baslik text-3xl font-semibold outline-none">
               Kartın hazır
             </h1>
-            <KartOnizleme to={kime} msg={msg.trim()} from={from.trim() || undefined} th={th} peaks={sesPeaks} />
+            <KartOnizleme to={kime} msg={msg.trim()} from={from.trim() || undefined} th={th} peaks={sesPeaks}>
+              {kartSt.length > 0 ? <CikartmaKatmani st={kartSt} /> : null}
+            </KartOnizleme>
             <p role="status" aria-live="polite" className="mt-6 min-h-7 font-baslik text-xl">
               {paylasildi ? "Birinin gününü güzelleştirdin." : ""}
             </p>
