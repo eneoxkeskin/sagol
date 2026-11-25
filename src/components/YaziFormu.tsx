@@ -11,6 +11,7 @@ import {
   type Tema,
 } from "@/lib/card";
 import SesKaydedici, { type SesKaydi } from "@/components/SesKaydedici";
+import TaslakYardimcisi from "@/components/TaslakYardimcisi";
 import { ekle } from "@/lib/defter";
 
 const IPUCLARI = [
@@ -248,6 +249,8 @@ export default function YaziFormu({
           autoComplete="off"
         />
       </label>
+
+      <TaslakYardimcisi onSec={(s) => setMsg(kesKodNoktasi(s, LIMITLER.msg))} />
 
       <div>
         <p className="font-bold">Bir başlangıç ister misin?</p>
