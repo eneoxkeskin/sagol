@@ -35,7 +35,7 @@ async function BugunSayaci() {
   const n = await bugunSayisi();
   if (n === null || n < 1) return null;
   return (
-    <p className="mt-2 text-base text-muted">
+    <p className="mt-2 text-base text-muted sm:text-center">
       Bugün {n.toLocaleString("tr-TR")} teşekkür edildi.
     </p>
   );
@@ -44,7 +44,7 @@ async function BugunSayaci() {
 export default function Home({ searchParams }: PageProps<"/">) {
   return (
     <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8">
-      <h1 className="text-3xl font-extrabold leading-tight">
+      <h1 className="text-3xl font-extrabold leading-tight sm:text-center">
         Bugün kime teşekkür etmek istersin?
       </h1>
       <Suspense fallback={null}>

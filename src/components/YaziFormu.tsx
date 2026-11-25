@@ -56,6 +56,7 @@ export default function YaziFormu({
   ses?: boolean;
   sesBaslangicAcik?: boolean;
 }) {
+  const [paylasildi, setPaylasildi] = useState(false);
   const [kayit, setKayit] = useState<SesKaydi | null>(null);
   const [yuklenen, setYuklenen] = useState<{ id: string; token: string; bitis: number } | null>(null);
   const [yukleniyor, setYukleniyor] = useState(false);
@@ -141,6 +142,7 @@ export default function YaziFormu({
     try {
       await navigator.clipboard.writeText(link);
       setDurum("Kopyalandı");
+      setPaylasildi(true);
     } catch {
       setDurum("Kopyalanamadı; linki elle seçip kopyalayabilirsin.");
     }
@@ -153,6 +155,7 @@ export default function YaziFormu({
         title: `${to.trim()} için bir teşekkür`,
         url: link,
       });
+      setPaylasildi(true);
     } catch {
       // kullanıcı vazgeçti; sorun yok
     }
@@ -165,9 +168,20 @@ export default function YaziFormu({
     const dugme =
       "rounded-full border-2 border-stone-700 px-5 py-3 text-center font-bold";
     return (
-      <section className="mt-6">
-        <Kart to={to.trim()} msg={msg.trim()} from={from.trim()} th={th} />
-        <p className="mt-6 text-lg font-bold">Birinin gününü güzelleştirdin.</p>
+      <section className="mx-auto mt-6 max-w-md text-center">
+        <h2
+          ref={(el) => el?.focus()}
+          tabIndex={-1}
+          className="mb-4 text-2xl font-extrabold outline-none"
+        >
+          Kartın hazır
+        </h2>
+        <div className="text-left">
+          <Kart to={to.trim()} msg={msg.trim()} from={from.trim()} th={th} />
+        </div>
+        <p role="status" aria-live="polite" className="mt-6 min-h-7 text-lg font-bold">
+          {paylasildi ? "Birinin gününü güzelleştirdin." : ""}
+        </p>
         <div className="mt-4 flex flex-col gap-3">
           {paylasilabilir ? (
             <button
@@ -180,6 +194,7 @@ export default function YaziFormu({
           ) : null}
           <a
             href={wa}
+            onClick={() => setPaylasildi(true)}
             target="_blank"
             rel="noopener noreferrer"
             className={dugme}
@@ -223,6 +238,7 @@ export default function YaziFormu({
           type="button"
           onClick={() => {
             setLink(null);
+            setPaylasildi(false);
             setDurum("");
           }}
           className="mt-2 font-semibold underline underline-offset-4"
