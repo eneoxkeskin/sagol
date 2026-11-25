@@ -1,26 +1,85 @@
 @import "tailwindcss";
 
-:root {
-  --background: #fffaf0;
-  --foreground: #2b2118;
-  --muted: #5c4a3b;
+/* Tema token'ları: docs/DESIGN-V3.md. TS karşılığı src/lib/tema.ts (OG/story/kontrast testi). */
+:root,
+[data-tema="krem"] {
+  --zemin: #fff8ea;
+  --murekkep: #2b1d12;
+  --ikincil: #6b5a48;
+  --vurgu: #2b1d12;
+  --vurgu-yazi: #fff8ea;
+  --kutu: #ffffff;
+  --odak: #1d4ed8;
+}
+[data-tema="sabah"] {
+  --zemin: #ffd23f;
+  --murekkep: #1b1306;
+  --ikincil: #4a3a0c;
+  --vurgu: #1b1306;
+  --vurgu-yazi: #ffd23f;
+  --kutu: #fff4c2;
+  --odak: #1b1306;
+}
+[data-tema="cay"] {
+  --zemin: #12372a;
+  --murekkep: #f6ebd3;
+  --ikincil: #bfd0c4;
+  --vurgu: #f2c14e;
+  --vurgu-yazi: #12372a;
+  --kutu: #1c4a3a;
+  --odak: #f2c14e;
+}
+[data-tema="deniz"] {
+  --zemin: #bfe0f5;
+  --murekkep: #0f2a3f;
+  --ikincil: #35566f;
+  --vurgu: #0f2a3f;
+  --vurgu-yazi: #bfe0f5;
+  --kutu: #f4faff;
+  --odak: #0f2a3f;
+}
+[data-tema="lavanta"] {
+  --zemin: #d8ccf7;
+  --murekkep: #22123f;
+  --ikincil: #4a3a78;
+  --vurgu: #22123f;
+  --vurgu-yazi: #d8ccf7;
+  --kutu: #f3effd;
+  --odak: #22123f;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --font-sans: var(--font-nunito);
+  --color-zemin: var(--zemin);
+  --color-murekkep: var(--murekkep);
+  --color-ikincil: var(--ikincil);
+  --color-vurgu: var(--vurgu);
+  --color-vurgu-yazi: var(--vurgu-yazi);
+  --color-kutu: var(--kutu);
+  /* eski sınıflar için geriye uyum */
+  --color-background: var(--zemin);
+  --color-foreground: var(--murekkep);
+  --color-muted: var(--ikincil);
+  --font-baslik: var(--font-fraunces), Georgia, serif;
+  --font-arayuz: var(--font-dmsans), system-ui, sans-serif;
+  --font-sans: var(--font-dmsans), system-ui, sans-serif;
+  --radius-kart: 28px;
+  --radius-dugme: 28px;
+  --radius-cip: 22px;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-nunito), system-ui, sans-serif;
+  background: var(--zemin);
+  color: var(--murekkep);
+  font-family: var(--font-dmsans), system-ui, sans-serif;
+}
+
+[data-tema] {
+  background: var(--zemin);
+  color: var(--murekkep);
 }
 
 :focus-visible {
-  outline: 3px solid #1d4ed8;
+  outline: 3px solid var(--odak);
   outline-offset: 2px;
 }
 
@@ -32,6 +91,24 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+@keyframes halka-belir {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.6);
+  }
+  to {
+    transform: scale(1);
   }
 }
 
