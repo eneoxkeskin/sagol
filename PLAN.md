@@ -40,7 +40,7 @@ type DefterKaydi = { id: string; tur: "gonderilen" | "alinan"; d: string; kart: 
 - [x] **M3 — Kart sayfası (45 dk)**: `src/app/k/[d]/page.tsx` (sunucu, `await params`, `decodeCard`), `generateMetadata` (başlık: "<Kime> için bir teşekkür"), açılış animasyonu (`motion-safe:`), zincir halkası metni, "Defterime kaydet" (istemci), "Sen de birine teşekkür et" → `/?z=n+1`, bozuk link durumu.
   Bitti sayılır: M2 linki açılır; `/k/abc`, `/k/<3000 karakter>` nazik hata verir; `<script>` metni düz yazı görünür.
   Not: `z=1` ise zincir cümlesi hiç gösterilmez. Mesaj `whitespace-pre-line` ile düz metin; URL'ler link yapılmaz.
-- [ ] **M4 — OG görseli (45 dk)**: `src/app/k/[d]/opengraph-image.tsx` (`ImageResponse` from `next/og`, 1200×630, yalnızca flexbox), tema renkleri, mesaj ilk ~120 karakter + "…", bozuk veride genel SağOl görseli.
+- [x] **M4 — OG görseli (45 dk)**: `src/app/k/[d]/opengraph-image.tsx` (`ImageResponse` from `next/og`, 1200×630, yalnızca flexbox), tema renkleri, mesaj ilk ~120 karakter + "…", bozuk veride genel SağOl görseli.
   Bitti sayılır: `/k/<d>/opengraph-image` PNG döner, "ğşıİöüç" kutucuk değil harf olarak görünür; build temiz.
   Not: **Türkçe karakter riski.** Önce varsayılan fontla dene; eksik glif varsa `curl -sL "https://fonts.googleapis.com/css2?family=Nunito:wght@800"` (UA'sız istek .ttf URL'si döner) ile statik TTF'yi `src/assets/og-font.ttf` olarak indir, modül seviyesinde `readFile` ile yükle. Toplam paket < 500KB. Emoji görsellerde atlanabilir.
 - [ ] **M5 — Defter (60 dk)**: `src/lib/defter.ts` (oku/yaz/sil, şema kontrolü, 200 sınırı, aynı `d` tekrar eklenmez), gönderince otomatik "gonderilen" kaydı, `src/app/defter/page.tsx`: haftalık özet, iki sekme, "Geçmişten bir kart" (≥3 kayıt varsa), tek tek sil + "Tümünü sil" (onaylı), ana sayfada sade "Defterim" linki.
@@ -61,3 +61,4 @@ type DefterKaydi = { id: string; tur: "gonderilen" | "alinan"; d: string; kart: 
 - (M1) kesKodNoktasi/kodNoktasiUzunlugu yardımcıları card.ts içinde dışa açıldı (M2 formu kullanır). Node MODULE_TYPELESS uyarısı zararsız; "type":"module" Next config dosyalarını etkileyebileceği için eklenmedi.
 - (M2) Açık/koyu tema yerine tek sıcak açık tema (AA kontrast garantisi için). `?z=` okuması Suspense içinde (cacheComponents prerender hatası). Link 1200 karakteri aşarsa form nazik uyarı verir. Defter kaydı M5.
 - (M3) "Defterime kaydet" düğmesi M5e bırakıldı: defter.ts henüz yok, M5 düğmeyi kart sayfasına ekler. Kart sayfası Suspense içinde params okur (cacheComponents). Geçersiz link 200 ile nazik hata ekranı gösterir.
+- (M4) Varsayılan ImageResponse fontu ğşıİöüç glifleri doğru çiziyor (gözle doğrulandı); özel TTF indirilmedi, paket küçük kaldı. Bozuk veri: genel SağOl görseli.
