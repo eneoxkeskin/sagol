@@ -16,8 +16,8 @@ test("geçersiz girdiler null", () => {
   assert.equal(decodeCard(undefined), null);
   assert.equal(decodeCard("abc"), null);
   assert.equal(decodeCard("!!!!"), null);
-  assert.equal(decodeCard("A".repeat(1201)), null);
-  assert.equal(decodeCard(enc({ ...base, v: 2 })), null);
+  assert.equal(decodeCard("A".repeat(1601)), null);
+  assert.equal(decodeCard(enc({ ...base, v: 3 })), null);
   assert.equal(decodeCard(enc({ ...base, to: 5 })), null);
   assert.equal(decodeCard(enc({ ...base, msg: "  " })), null);
   assert.equal(decodeCard(enc({ ...base, msg: "a".repeat(201) })), null);
@@ -30,6 +30,18 @@ test("eski z ve yeni h alanı", () => {
   assert.equal(decodeCard(enc({ ...base, h: 0 }))?.h, 1);
   assert.equal(decodeCard(enc({ ...base, h: 1000 }))?.h, 1);
   assert.equal(decodeCard(enc({ ...base, h: "abc" }))?.h, 1);
+});
+
+test("v:2 p alanı; v:1'de yok sayılır", () => {
+  const p = "A".repeat(64);
+  const k2 = decodeCard(enc({ ...base, v: 2, p }));
+  assert.equal(k2?.v, 2);
+  assert.equal(k2?.p, p);
+  assert.equal(decodeCard(enc({ ...base, v: 1, p }))?.p, undefined);
+  assert.equal(decodeCard(enc({ ...base, v: 2, p: "kisa" }))?.p, undefined);
+  assert.equal(decodeCard(enc({ ...base, v: 2, p: "<script>" + "A".repeat(56) }))?.p, undefined);
+  const k: Kart = { ...base, v: 2, p, s: "B".repeat(22) };
+  assert.deepEqual(decodeCard(encodeCard(k)), k);
 });
 
 test("ses id yalnızca geçerliyse taşınır", () => {

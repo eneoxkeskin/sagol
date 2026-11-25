@@ -28,6 +28,8 @@ export async function semaHazir(): Promise<Sql | null> {
       expires_at timestamptz NOT NULL,
       delete_token_hash text NOT NULL
     )`;
+    // v3: geriye uyumlu; eski satırlarda NULL.
+    await s`ALTER TABLE voices ADD COLUMN IF NOT EXISTS peaks bytea`;
     await s`CREATE TABLE IF NOT EXISTS stats (
       day date PRIMARY KEY,
       count integer NOT NULL DEFAULT 0

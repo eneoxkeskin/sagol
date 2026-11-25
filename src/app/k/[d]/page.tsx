@@ -3,7 +3,9 @@ import Link from "next/link";
 import { Suspense } from "react";
 import AliciEkrani from "@/components/AliciEkrani";
 import { decodeCard } from "@/lib/card";
+import { peaksCoz } from "@/lib/halka";
 import { sesAcik } from "@/lib/ozellik";
+import { sesPeaks } from "@/lib/sesMeta";
 
 export async function generateMetadata({
   params,
@@ -40,7 +42,10 @@ async function KartGorunumu({ params }: Pick<PageProps<"/k/[d]">, "params">) {
     );
   }
 
-  return <AliciEkrani kart={kart} d={d} ses={sesAcik()} />;
+  const ses = sesAcik();
+  // Genlik kaynağı: karttaki p; yoksa (ve ses varsa) voices.peaks; o da yoksa tohum.
+  const peaks = peaksCoz(kart.p) ?? (ses && kart.s ? await sesPeaks(kart.s) : null);
+  return <AliciEkrani kart={kart} d={d} ses={ses} peaks={peaks} />;
 }
 
 export default function KartSayfasi({ params }: PageProps<"/k/[d]">) {

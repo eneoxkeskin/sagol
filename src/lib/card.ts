@@ -2,7 +2,8 @@ export const TEMALAR = ["sabah", "cay", "deniz", "lavanta"] as const;
 export type Tema = (typeof TEMALAR)[number];
 
 export type Kart = {
-  v: 1;
+  /** 1: eski linkler; 2: `p` (genlikler) ve `st` (çıkartmalar) taşıyabilir. */
+  v: 1 | 2;
   to: string;
   msg: string;
   from?: string;
@@ -11,10 +12,13 @@ export type Kart = {
   h: number;
   /** Ses kaydı id'si (22 karakter base64url), opsiyonel. */
   s?: string;
+  /** v:2 — 48 ses genliği, base64url 64 karakter (bkz. halka.ts peaksKodla). */
+  p?: string;
   t: number;
 };
 
 export const SES_ID_REGEX = /^[A-Za-z0-9_-]{22}$/;
+export const PEAKS_REGEX = /^[A-Za-z0-9_-]{64}$/;
 
 /** Ad alanı temizleyici (form `?to=` için): NFC, kontrol karakteri yok, ≤40 kod noktası. */
 export function temizleAd(s: string): string {
@@ -45,7 +49,7 @@ export const LIMITLER = {
   msg: 200,
   from: 40,
   zMax: 999,
-  dMax: 1200,
+  dMax: 1600,
 } as const;
 
 const D_REGEX = /^[A-Za-z0-9_-]+$/;
@@ -97,7 +101,7 @@ export function decodeCard(d: unknown): Kart | null {
   }
   if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
   const o = raw as Record<string, unknown>;
-  if (o.v !== 1) return null;
+  if (o.v !== 1 && o.v !== 2) return null;
   if (typeof o.to !== "string" || typeof o.msg !== "string") return null;
   if (typeof o.t !== "number" || !Number.isFinite(o.t)) return null;
 
@@ -117,9 +121,10 @@ export function decodeCard(d: unknown): Kart | null {
   const th: Tema = (TEMALAR as readonly unknown[]).includes(o.th) ? (o.th as Tema) : "sabah";
   const h = halka(o.h) ?? halka(o.z) ?? 1;
 
-  const kart: Kart = { v: 1, to, msg, th, h, t: Math.floor(o.t) };
+  const kart: Kart = { v: o.v, to, msg, th, h, t: Math.floor(o.t) };
   if (from) kart.from = from;
   if (typeof o.s === "string" && SES_ID_REGEX.test(o.s)) kart.s = o.s;
+  if (o.v === 2 && typeof o.p === "string" && PEAKS_REGEX.test(o.p)) kart.p = o.p;
   return kart;
 }
 

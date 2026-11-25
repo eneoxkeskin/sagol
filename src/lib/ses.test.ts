@@ -4,6 +4,7 @@ import {
   aralikAyristir,
   mimeTemizle,
   ozetEsit,
+  peaksAyristir,
   sihirliBayt,
   sinirliOku,
   sureGecerli,
@@ -49,6 +50,14 @@ test("id ve token tahmin edilemez biçimde üretilir", () => {
   assert.ok(yeniToken().length >= 43);
   assert.ok(ozetEsit(tokenOzeti("x"), tokenOzeti("x")));
   assert.ok(!ozetEsit(tokenOzeti("x"), tokenOzeti("y")));
+});
+
+test("X-Peaks ayrıştırma", () => {
+  assert.deepEqual(peaksAyristir(null), { ok: true, bayt: null });
+  const ok = peaksAyristir(Buffer.alloc(48, 200).toString("base64url"));
+  assert.ok(ok.ok && ok.bayt?.length === 48);
+  assert.equal(peaksAyristir("kisa").ok, false);
+  assert.equal(peaksAyristir("!".repeat(64)).ok, false);
 });
 
 test("range ayrıştırma", () => {

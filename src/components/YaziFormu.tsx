@@ -1,18 +1,22 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
-import Kart from "@/components/Kart";
+import Link from "next/link";
+import { useState, useSyncExternalStore, type ReactNode } from "react";
+import KartOnizleme from "@/components/KartOnizleme";
+import SesKaydedici, { type SesKaydi } from "@/components/SesKaydedici";
+import TaslakYardimcisi from "@/components/TaslakYardimcisi";
 import {
   LIMITLER,
   TEMALAR,
   encodeCard,
   kesKodNoktasi,
   kodNoktasiUzunlugu,
+  type Kart,
   type Tema,
 } from "@/lib/card";
-import SesKaydedici, { type SesKaydi } from "@/components/SesKaydedici";
-import TaslakYardimcisi from "@/components/TaslakYardimcisi";
 import { ekle } from "@/lib/defter";
+import { peaksKodla } from "@/lib/halka";
+import { TEMA_AD, TEMA_RENK } from "@/lib/tema";
 
 const IPUCLARI = [
   "Zor günümde yanımda olduğun için…",
@@ -23,25 +27,52 @@ const IPUCLARI = [
   "Bana inandığın için…",
 ];
 
-const TEMA_ETIKET: Record<Tema, string> = {
-  sabah: "Sabah",
-  cay: "Çay",
-  deniz: "Deniz",
-  lavanta: "Lavanta",
-};
-
-const TEMA_NOKTA: Record<Tema, string> = {
-  sabah: "bg-amber-300",
-  cay: "bg-emerald-300",
-  deniz: "bg-sky-300",
-  lavanta: "bg-violet-300",
-};
-
 const bosAbone = () => () => {};
 const canShare = () => typeof navigator !== "undefined" && "share" in navigator;
 
-const alan =
-  "mt-1 w-full rounded-xl border-2 border-stone-400 bg-white px-3 py-2 text-base";
+const birincil =
+  "inline-flex h-14 w-full items-center justify-center rounded-[28px] bg-vurgu px-6 text-lg font-bold text-vurgu-yazi disabled:cursor-not-allowed disabled:opacity-50";
+const ikincil =
+  "inline-flex h-14 w-full items-center justify-center rounded-[28px] border-2 border-murekkep px-6 text-base font-bold";
+const metinLink = "inline-flex min-h-11 items-center text-[15px] font-medium underline underline-offset-4";
+
+type Yuklenen = { id: string; token: string; bitis: number };
+
+/** Sonda virgül/boşluk (yer tutucu "Annem," alışkanlığı) adın parçası sayılmaz. */
+const adTemizle = (s: string) => s.trim().replace(/[\s,]+$/u, "");
+
+function TemaSecici({ th, setTh }: { th: Tema; setTh: (t: Tema) => void }) {
+  return (
+    <div role="radiogroup" aria-label="Tema" className="flex">
+      {TEMALAR.map((t, i) => (
+        <button
+          key={t}
+          id={`tema-${t}`}
+          type="button"
+          role="radio"
+          aria-checked={th === t}
+          aria-label={`${TEMA_AD[t]} teması`}
+          tabIndex={th === t ? 0 : -1}
+          onClick={() => setTh(t)}
+          onKeyDown={(e) => {
+            const yon = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0;
+            if (!yon) return;
+            e.preventDefault();
+            const yeni = TEMALAR[(i + yon + TEMALAR.length) % TEMALAR.length];
+            setTh(yeni);
+            document.getElementById(`tema-${yeni}`)?.focus();
+          }}
+          className="flex size-11 items-center justify-center rounded-full"
+        >
+          <span
+            className={`block size-6 rounded-full border-murekkep ${th === t ? "border-[3px]" : "border"}`}
+            style={{ backgroundColor: TEMA_RENK[t].zemin }}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export default function YaziFormu({
   h,
@@ -49,16 +80,20 @@ export default function YaziFormu({
   sayac = false,
   ses = false,
   sesBaslangicAcik = false,
+  ust,
 }: {
   h: number;
   baslangicKime?: string;
   sayac?: boolean;
   ses?: boolean;
   sesBaslangicAcik?: boolean;
+  /** Sunucudan gelen küçük içerik (ör. "Bugün N teşekkür edildi"). */
+  ust?: ReactNode;
 }) {
+  const [adim, setAdim] = useState<"yaz" | "hazir">("yaz");
   const [paylasildi, setPaylasildi] = useState(false);
   const [kayit, setKayit] = useState<SesKaydi | null>(null);
-  const [yuklenen, setYuklenen] = useState<{ id: string; token: string; bitis: number } | null>(null);
+  const [yuklenen, setYuklenen] = useState<Yuklenen | null>(null);
   const [yukleniyor, setYukleniyor] = useState(false);
   const [silLink, setSilLink] = useState<string | null>(null);
   const [to, setTo] = useState(baslangicKime);
@@ -69,19 +104,21 @@ export default function YaziFormu({
   const [durum, setDurum] = useState("");
   const paylasilabilir = useSyncExternalStore(bosAbone, canShare, () => false);
 
-  const hazir = to.trim().length > 0 && msg.trim().length > 0;
+  const kime = adTemizle(to);
+  const hazir = kime.length > 0 && msg.trim().length > 0;
   const kalan = LIMITLER.msg - kodNoktasiUzunlugu(msg);
+  const sesPeaks = yuklenen && kayit ? kayit.peaks : null;
 
   function ipucu(s: string) {
     const yeni = msg.trim() ? `${msg.trimEnd()} ${s}` : s;
     setMsg(kesKodNoktasi(yeni, LIMITLER.msg));
   }
 
-  async function sesiYukle(k: SesKaydi) {
+  async function sesiYukle(k: SesKaydi): Promise<Yuklenen | null> {
     try {
       const r = await fetch("/api/ses", {
         method: "POST",
-        headers: { "Content-Type": k.mime, "X-Sure-Ms": String(k.sureMs) },
+        headers: { "Content-Type": k.mime, "X-Sure-Ms": String(k.sureMs), "X-Peaks": peaksKodla(k.peaks) },
         body: k.blob,
       });
       if (!r.ok) return null;
@@ -92,7 +129,7 @@ export default function YaziFormu({
         typeof (j as { token?: unknown }).token === "string" &&
         typeof (j as { bitis?: unknown }).bitis === "number"
       ) {
-        return j as { id: string; token: string; bitis: number };
+        return j as Yuklenen;
       }
       return null;
     } catch {
@@ -100,6 +137,7 @@ export default function YaziFormu({
     }
   }
 
+  /** Sesi (varsa) yükler; kartı kodlar, deftere ekler, linki hazırlar. */
   async function olustur() {
     if (!hazir || yukleniyor) return;
     let ek = yuklenen;
@@ -112,16 +150,18 @@ export default function YaziFormu({
       if (ek) setYuklenen(ek);
       else not = "Ses yüklenemedi; kartın yazılı olarak hazır.";
     }
-    const d = encodeCard({
-      v: 1,
-      to: to.trim(),
+    const kart: Kart = {
+      v: 2,
+      to: kime,
       msg: msg.trim(),
       ...(from.trim() ? { from: from.trim() } : {}),
       th,
       h,
       ...(ek ? { s: ek.id } : {}),
+      ...(ek && kayit ? { p: peaksKodla(kayit.peaks) } : {}),
       t: Math.floor(Date.now() / 1000),
-    });
+    };
+    const d = encodeCard(kart);
     if (d.length > LIMITLER.dMax) {
       setDurum("Kart biraz uzun oldu. Mesajı ya da adları kısaltır mısın?");
       return;
@@ -135,6 +175,7 @@ export default function YaziFormu({
       fetch("/api/sayac", { method: "POST", keepalive: true }).catch(() => {});
     }
     setLink(`${window.location.origin}/k/${d}`);
+    setAdim("hazir");
   }
 
   async function kopyala() {
@@ -151,217 +192,194 @@ export default function YaziFormu({
   async function paylas() {
     if (!link) return;
     try {
-      await navigator.share({
-        title: `${to.trim()} için bir teşekkür`,
-        url: link,
-      });
+      await navigator.share({ title: `${kime} için bir teşekkür`, url: link });
       setPaylasildi(true);
     } catch {
       // kullanıcı vazgeçti; sorun yok
     }
   }
 
-  if (link) {
-    const wa = `https://wa.me/?text=${encodeURIComponent(
-      `${to.trim()} için bir teşekkür yazdım: ${link}`,
-    )}`;
-    const dugme =
-      "rounded-full border-2 border-stone-700 px-5 py-3 text-center font-bold";
+  const ustSerit = (
+    <header className="flex items-center justify-between">
+      <Link href="/" className="font-baslik text-xl font-semibold">
+        SağOl
+      </Link>
+      {adim === "yaz" ? <TemaSecici th={th} setTh={setTh} /> : null}
+    </header>
+  );
+
+  if (adim === "hazir" && link) {
+    const wa = `https://wa.me/?text=${encodeURIComponent(`${kime} için bir teşekkür yazdım: ${link}`)}`;
     return (
-      <section className="mx-auto mt-6 max-w-md text-center">
-        <h2
-          ref={(el) => el?.focus()}
-          tabIndex={-1}
-          className="mb-4 text-2xl font-extrabold outline-none"
-        >
-          Kartın hazır
-        </h2>
-        <div className="text-left">
-          <Kart to={to.trim()} msg={msg.trim()} from={from.trim()} th={th} />
-        </div>
-        <p role="status" aria-live="polite" className="mt-6 min-h-7 text-lg font-bold">
-          {paylasildi ? "Birinin gününü güzelleştirdin." : ""}
-        </p>
-        <div className="mt-4 flex flex-col gap-3">
-          {paylasilabilir ? (
-            <button
-              type="button"
-              onClick={paylas}
-              className={`${dugme} bg-stone-800 text-white`}
-            >
-              Paylaş
-            </button>
-          ) : null}
-          <a
-            href={wa}
-            onClick={() => setPaylasildi(true)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={dugme}
-          >
-            WhatsApp
-          </a>
-          <button type="button" onClick={kopyala} className={dugme}>
-            Linki kopyala
-          </button>
-        </div>
-        {silLink ? (
-          <div className="mt-4 rounded-2xl border-2 border-stone-300 bg-white p-4">
-            <p className="font-semibold">
-              Bu linkle sesi istediğin an silebilirsin. Yalnızca sende kalsın.
+      <div data-tema={th} className="flex min-h-dvh flex-1 flex-col px-6 pb-10 pt-6">
+        <div className="mx-auto w-full max-w-[440px]">
+          {ustSerit}
+          <section className="mt-6 text-center">
+            <h1 ref={(el) => el?.focus()} tabIndex={-1} className="mb-5 font-baslik text-3xl font-semibold outline-none">
+              Kartın hazır
+            </h1>
+            <KartOnizleme to={kime} msg={msg.trim()} from={from.trim() || undefined} th={th} peaks={sesPeaks} />
+            <p role="status" aria-live="polite" className="mt-6 min-h-7 font-baslik text-xl">
+              {paylasildi ? "Birinin gününü güzelleştirdin." : ""}
+            </p>
+            <div className="mt-4 flex flex-col gap-3">
+              {paylasilabilir ? (
+                <button type="button" onClick={paylas} className={birincil}>
+                  Paylaş
+                </button>
+              ) : null}
+              <a href={wa} onClick={() => setPaylasildi(true)} target="_blank" rel="noopener noreferrer" className={ikincil}>
+                WhatsApp
+              </a>
+              <button type="button" onClick={kopyala} className={ikincil}>
+                Linki kopyala
+              </button>
+            </div>
+            {silLink ? (
+              <div className="mt-5 rounded-[22px] bg-kutu p-4 text-left">
+                <p className="font-medium">Bu linkle sesi istediğin an silebilirsin. Yalnızca sende kalsın.</p>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(silLink);
+                      setDurum("Silme linki kopyalandı");
+                    } catch {
+                      setDurum("Kopyalanamadı; silme linkini elle seçip kopyalayabilirsin.");
+                    }
+                  }}
+                  className={metinLink}
+                >
+                  Silme linkini kopyala
+                </button>
+                <p className="break-all text-sm text-ikincil">{silLink}</p>
+              </div>
+            ) : null}
+            <p role="status" aria-live="polite" className="mt-3 min-h-6 font-medium">
+              {durum}
             </p>
             <button
               type="button"
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(silLink);
-                  setDurum("Silme linki kopyalandı");
-                } catch {
-                  setDurum("Kopyalanamadı; silme linkini elle seçip kopyalayabilirsin.");
-                }
+              onClick={() => {
+                setAdim("yaz");
+                setLink(null);
+                setPaylasildi(false);
+                setDurum("");
               }}
-              className="mt-2 font-semibold underline underline-offset-4"
+              className={metinLink}
             >
-              Silme linkini kopyala
+              Kartı düzenle
             </button>
-            <p className="mt-2 break-all text-sm">{silLink}</p>
-          </div>
-        ) : null}
-        <p
-          role="status"
-          aria-live="polite"
-          className="mt-3 min-h-6 font-semibold"
-        >
-          {durum}
-        </p>
-        <button
-          type="button"
-          onClick={() => {
-            setLink(null);
-            setPaylasildi(false);
-            setDurum("");
-          }}
-          className="mt-2 font-semibold underline underline-offset-4"
-        >
-          Kartı düzenle
-        </button>
-      </section>
+          </section>
+        </div>
+      </div>
     );
   }
 
   return (
-    <form
-      className="mt-6 flex flex-col gap-5"
-      onSubmit={(e) => {
-        e.preventDefault();
-        olustur();
-      }}
-    >
-      <label className="block font-bold">
-        Kime
-        <input
-          className={alan}
-          value={to}
-          onChange={(e) => setTo(kesKodNoktasi(e.target.value, LIMITLER.to))}
-          autoComplete="off"
-        />
-      </label>
+    <div data-tema={th} className="flex min-h-dvh flex-1 flex-col px-6 pb-10 pt-6">
+      <div className="mx-auto w-full max-w-[440px]">
+        {ustSerit}
+        <div className="mt-1 min-h-6 text-sm text-ikincil">{ust}</div>
+        <h1 className="sr-only">Bugün kime teşekkür etmek istersin?</h1>
 
-      <TaslakYardimcisi onSec={(s) => setMsg(kesKodNoktasi(s, LIMITLER.msg))} />
-
-      <div>
-        <p className="font-bold">Bir başlangıç ister misin?</p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {IPUCLARI.map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => ipucu(s)}
-              className="rounded-full border-2 border-stone-400 bg-white px-3 py-1 text-sm"
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <label className="block font-bold">
-        Mesajın
-        <textarea
-          className={`${alan} min-h-32`}
-          value={msg}
-          onChange={(e) => setMsg(kesKodNoktasi(e.target.value, LIMITLER.msg))}
-        />
-        <span className="block text-right text-sm font-normal text-muted">
-          {kalan} karakter kaldı
-        </span>
-      </label>
-
-      <label className="block font-bold">
-        Kimden <span className="font-normal text-muted">(isteğe bağlı)</span>
-        <input
-          className={alan}
-          value={from}
-          onChange={(e) =>
-            setFrom(kesKodNoktasi(e.target.value, LIMITLER.from))
-          }
-          autoComplete="off"
-        />
-      </label>
-
-      <fieldset>
-        <legend className="font-bold">Tema</legend>
-        <div className="mt-2 flex flex-wrap gap-4">
-          {TEMALAR.map((t) => (
-            <label key={t} className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="tema"
-                value={t}
-                checked={th === t}
-                onChange={() => setTh(t)}
-              />
-              <span
-                className={`inline-block size-4 rounded-full border border-stone-600 ${TEMA_NOKTA[t]}`}
-              />
-              {TEMA_ETIKET[t]}
-            </label>
-          ))}
-        </div>
-      </fieldset>
-
-      <div>
-        {ses ? (
-          <div className="mb-5">
-            <SesKaydedici
-              baslangicAcik={sesBaslangicAcik}
-              onDegis={(k) => {
-                setKayit(k);
-                setYuklenen(null);
-              }}
+        <form
+          className="mt-4 flex flex-col"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void olustur();
+          }}
+        >
+          <span className="font-baslik text-2xl italic text-ikincil" aria-hidden="true">
+            Sevgili
+          </span>
+          <input
+            aria-label="Kime teşekkür ediyorsun? (isim)"
+            className="w-full bg-transparent font-baslik text-[clamp(2.5rem,15vw,4rem)] font-semibold leading-[1.05] placeholder:text-ikincil focus-visible:outline-offset-4"
+            placeholder="Annem,"
+            value={to}
+            onChange={(e) => setTo(kesKodNoktasi(e.target.value, LIMITLER.to))}
+            autoComplete="off"
+          />
+          <textarea
+            aria-label="Mesajın"
+            aria-describedby="kalan"
+            rows={3}
+            className="mt-4 min-h-[6.5em] w-full resize-none bg-transparent text-2xl leading-[1.35] placeholder:text-ikincil"
+            placeholder="Bugün aklıma sen geldin…"
+            value={msg}
+            onChange={(e) => setMsg(kesKodNoktasi(e.target.value, LIMITLER.msg))}
+          />
+          <span id="kalan" className="text-right text-sm text-ikincil">
+            {kalan} karakter kaldı
+          </span>
+          <div className="mt-2 flex items-baseline justify-end gap-1 font-baslik text-[22px] italic">
+            <span aria-hidden="true">—</span>
+            <input
+              aria-label="Adın (isteğe bağlı)"
+              className="w-1/2 min-w-0 bg-transparent text-right placeholder:text-ikincil"
+              placeholder="adın"
+              value={from}
+              onChange={(e) => setFrom(kesKodNoktasi(e.target.value, LIMITLER.from))}
+              autoComplete="off"
             />
           </div>
-        ) : null}
-        <p className="mb-2 font-bold">Önizleme</p>
-        <Kart to={to.trim()} msg={msg.trim()} from={from.trim()} th={th} />
+
+          <details className="mt-4">
+            <summary className="inline-flex min-h-11 cursor-pointer items-center text-[15px] font-medium underline underline-offset-4">
+              İlham al
+            </summary>
+            <div className="mt-2 flex flex-col gap-3">
+              <TaslakYardimcisi onSec={(s) => setMsg(kesKodNoktasi(s, LIMITLER.msg))} />
+              <div className="flex flex-wrap gap-2">
+                {IPUCLARI.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => ipucu(s)}
+                    className="min-h-11 rounded-[22px] bg-kutu px-4 text-left text-sm"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </details>
+
+          {ses ? (
+            <div className="mt-6">
+              <SesKaydedici
+                baslangicAcik={sesBaslangicAcik}
+                onDegis={(k) => {
+                  setKayit(k);
+                  setYuklenen(null);
+                }}
+              />
+            </div>
+          ) : null}
+
+          <button type="submit" disabled={!hazir || yukleniyor} className={`mt-8 ${birincil}`}>
+            Kartı oluştur
+          </button>
+          <p role="status" aria-live="polite" className="mt-2 min-h-6 text-center font-medium">
+            {durum}
+          </p>
+          <p className="mt-2 text-center text-sm text-ikincil">
+            {ses
+              ? "Yazdığın metin sunucuya gitmez. Ses eklersen 7 gün saklanır, sonra silinir."
+              : "Link kimdeyse kartı o görür. Hiçbir şey sunucuda saklanmaz."}
+          </p>
+        </form>
+
+        <nav className="mt-6 flex justify-center gap-6" aria-label="Diğer sayfalar">
+          <Link href="/sakladiklarim" className={metinLink}>
+            Sakladıklarım
+          </Link>
+          <Link href="/hakkinda" className={metinLink}>
+            Hakkında
+          </Link>
+        </nav>
       </div>
-
-      <p className="text-sm text-muted">
-        {ses
-          ? "Yazdığın metin sunucuya gitmez. Ses eklersen 7 gün saklanır, sonra silinir."
-          : "Link kimdeyse kartı o görür. Hiçbir şey sunucuda saklanmaz."}
-      </p>
-
-      <button
-        type="submit"
-        disabled={!hazir || yukleniyor}
-        className="rounded-full bg-stone-800 px-5 py-3 text-lg font-bold text-white disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-700"
-      >
-        Kartı oluştur
-      </button>
-      <p role="status" aria-live="polite" className="min-h-6 font-semibold">
-        {durum}
-      </p>
-    </form>
+    </div>
   );
 }

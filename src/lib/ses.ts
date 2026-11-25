@@ -32,6 +32,14 @@ export function sureGecerli(ms: string | null): number | null {
   return n >= 1 && n <= SES_MAX_SURE_MS ? n : null;
 }
 
+/** `X-Peaks`: yoksa {ok, bayt:null}; 64 karakter base64url ve 48 bayt değilse {ok:false}. */
+export function peaksAyristir(baslik: string | null): { ok: true; bayt: Buffer | null } | { ok: false } {
+  if (baslik === null || baslik === "") return { ok: true, bayt: null };
+  if (!/^[A-Za-z0-9_-]{64}$/.test(baslik)) return { ok: false };
+  const bayt = Buffer.from(baslik, "base64url");
+  return bayt.length === 48 ? { ok: true, bayt } : { ok: false };
+}
+
 export function yeniId(): string {
   return randomBytes(16).toString("base64url"); // 22 karakter
 }

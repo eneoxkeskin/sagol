@@ -6,6 +6,7 @@ import {
   SES_MAX_BAYT,
   SES_SAKLAMA_GUN,
   mimeTemizle,
+  peaksAyristir,
   sihirliBayt,
   sinirliOku,
   sureGecerli,
@@ -27,6 +28,8 @@ export async function POST(istek: Request) {
   if (!mime) return hata(415);
   const sure = sureGecerli(istek.headers.get("x-sure-ms"));
   if (sure === null) return hata(400);
+  const peaks = peaksAyristir(istek.headers.get("x-peaks"));
+  if (!peaks.ok) return hata(400);
 
   const bildirilen = Number(istek.headers.get("content-length"));
   if (Number.isFinite(bildirilen) && bildirilen > SES_MAX_BAYT) return hata(413);
@@ -48,9 +51,9 @@ export async function POST(istek: Request) {
     const token = yeniToken();
     const ozet = tokenOzeti(token);
     const sakla = (await sql`INSERT INTO voices
-      (id, audio, mime, duration_ms, expires_at, delete_token_hash)
+      (id, audio, mime, duration_ms, expires_at, delete_token_hash, peaks)
       VALUES (${id}, ${Buffer.from(bayt)}, ${mime}, ${sure},
-        now() + (${SES_SAKLAMA_GUN} * interval '1 day'), ${ozet})
+        now() + (${SES_SAKLAMA_GUN} * interval '1 day'), ${ozet}, ${peaks.bayt})
       RETURNING extract(epoch from expires_at)::bigint AS bitis`) as { bitis: string | number }[];
 
     if (!SES_ID_REGEX.test(id)) return hata(500);
