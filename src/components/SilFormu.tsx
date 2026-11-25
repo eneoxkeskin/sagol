@@ -43,7 +43,7 @@ export default function SilFormu() {
     <div className="mt-6">
       {gecerli ? (
         <>
-          <p className="text-lg">Bu linkle ses kaydını hemen silebilirsin. Yazılı kartın etkilenmez.</p>
+          <p className="text-lg">Bu linkle ses kaydını istediğin an silebilirsin. Yazılı kartın etkilenmez.</p>
           <button
             type="button"
             onClick={sil}

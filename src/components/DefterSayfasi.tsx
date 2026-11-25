@@ -127,6 +127,14 @@ export default function DefterSayfasi() {
                   {k.sesBitis > simdi
                     ? `Ses kaydı ${tarihBicimi.format(new Date(k.sesBitis * 1000))} tarihine kadar dinlenebilir.`
                     : "Ses süresi doldu; yazılı hali burada."}
+                  {k.silLink && k.sesBitis > simdi ? (
+                    <>
+                      {" "}
+                      <a href={k.silLink} className="font-semibold underline underline-offset-4">
+                        Sesi sil
+                      </a>
+                    </>
+                  ) : null}
                 </p>
               ) : null}
               <div className="mt-3 flex gap-2">

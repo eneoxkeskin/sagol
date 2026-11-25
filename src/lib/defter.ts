@@ -12,7 +12,11 @@ export type DefterKaydi = {
   at: number;
   /** Ses kaydının silineceği an (unix sn), varsa. */
   sesBitis?: number;
+  /** Gönderenin ses silme linki; yalnızca bu cihazda tutulur. */
+  silLink?: string;
 };
+
+const SIL_LINK = /^https?:\/\/[A-Za-z0-9.:-]+\/sil#[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{20,64}$/;
 
 /** localStorage'daki ham metin; erişilemezse boş dizi metni. Sabit (primitive) döner. */
 export function hamOku(): string {
@@ -45,6 +49,7 @@ export function ayristir(ham: string): DefterKaydi[] {
       if (typeof r.sesBitis === "number" && Number.isFinite(r.sesBitis)) {
         kayit.sesBitis = r.sesBitis;
       }
+      if (typeof r.silLink === "string" && SIL_LINK.test(r.silLink)) kayit.silLink = r.silLink;
       sonuc.push(kayit);
     }
     return sonuc.slice(0, DEFTER_ENFAZLA);
@@ -69,7 +74,15 @@ function yaz(liste: DefterKaydi[]): boolean {
   try {
     const sade = liste
       .slice(0, DEFTER_ENFAZLA)
-      .map(({ id, tur, d, kart, at, sesBitis }) => ({ id, tur, d, kart, at, sesBitis }));
+      .map(({ id, tur, d, kart, at, sesBitis, silLink }) => ({
+        id,
+        tur,
+        d,
+        kart,
+        at,
+        sesBitis,
+        silLink,
+      }));
     window.localStorage.setItem(DEFTER_ANAHTAR, JSON.stringify(sade));
     window.dispatchEvent(new Event(OLAY));
     return true;
@@ -79,13 +92,19 @@ function yaz(liste: DefterKaydi[]): boolean {
 }
 
 /** Aynı `d` tekrar eklenmez. Eklendiyse true. */
-export function ekle(tur: DefterKaydi["tur"], d: string, sesBitis?: number): boolean {
+export function ekle(
+  tur: DefterKaydi["tur"],
+  d: string,
+  sesBitis?: number,
+  silLink?: string,
+): boolean {
   const kart = decodeCard(d);
   if (!kart) return false;
   const liste = ayristir(hamOku());
   if (liste.some((k) => k.d === d)) return false;
   const kayit: DefterKaydi = { id: d, tur, d, kart, at: Math.floor(Date.now() / 1000) };
   if (sesBitis !== undefined) kayit.sesBitis = sesBitis;
+  if (silLink !== undefined && SIL_LINK.test(silLink)) kayit.silLink = silLink;
   return yaz([kayit, ...liste]);
 }
 

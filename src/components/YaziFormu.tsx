@@ -126,8 +126,9 @@ export default function YaziFormu({
       return;
     }
     setDurum(not);
-    setSilLink(ek ? `${window.location.origin}/sil#${ek.id}.${ek.token}` : null);
-    ekle("gonderilen", d, ek?.bitis);
+    const sil = ek ? `${window.location.origin}/sil#${ek.id}.${ek.token}` : null;
+    setSilLink(sil);
+    ekle("gonderilen", d, ek?.bitis, sil ?? undefined);
     if (sayac) {
       // Anonim günlük sayaç; gövde yok. Hata akışı etkilemez.
       fetch("/api/sayac", { method: "POST", keepalive: true }).catch(() => {});
