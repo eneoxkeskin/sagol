@@ -35,8 +35,17 @@ Birine 20 sn'de teşekkür yaz → paylaşılabilir kart linki → alan kişi zi
 - `DATABASE_URL` ve diğer gizli anahtarlar hiçbir dosyaya, loga ya da çıktıya yazılmaz; `.env*` commit'lenmez.
 - Her sunucu girdisi (id, mime, boyut, süre, token) DB'ye gitmeden doğrulanır; hata yanıtları iç ayrıntı sızdırmaz.
 - Kullanıcı metni her zaman düz metin olarak render edilir: `dangerouslySetInnerHTML` yasak, linkler tıklanabilir yapılmaz.
-- URL verisi her zaman `src/lib/card.ts` içindeki `decodeCard` ile doğrulanır; bozuk/uzun/boş → nazik hata ekranı, asla crash.
+- URL verisi her zaman `src/lib/card.ts` içindeki `decodeCard` (tepki için `src/lib/tepki.ts` `decodeTepki`) ile doğrulanır; bozuk/uzun/boş → nazik hata ekranı, asla crash. Çıkartma türleri ve tepkiler allowlist'ten; serbest metin/URL taşımaz.
 - localStorage okuması try/catch + şema kontrolü ile yapılır.
+
+## Görsel ilkeler (v3)
+- Tasarım kaynağı `docs/DESIGN-V3.md`: tema token'ları (4 tema + krem uygulama zemini), tipografi, ses halkası formülü, D/E/F/G/H ekranları. Renkleri sabit yazma (`stone-*`, hex); token kullan (`bg-zemin`, `text-murekkep`, `text-ikincil`, `bg-vurgu`).
+- Kartın kimliği ses halkası (`SoundRing`, geometri `src/lib/halka.ts`); DOM, OG ve story aynı saf fonksiyonu kullanır.
+- Klişe yok: zarf, konfeti, gradyan dalga, sol kenarlıklı kart. Arayüz ikon/metinlerinde emoji yok; emoji yalnızca kullanıcının seçtiği çıkartma ve tepkilerde (sabit allowlist).
+- Fontlar: başlık/isim/alıntı Fraunces, arayüz DM Sans (`next/font`, latin + latin-ext). next/og'de Türkçe alfabeye alt kümelenmiş TTF (`src/assets/`), rota paketi < 500KB.
+- Dokunma hedefi ≥44px; metin kontrastı ≥4.5:1 (tüm temalarda); hareket yalnızca `motion-safe:` / `prefers-reduced-motion` saygılı; titreşim yok; ses asla otomatik çalmaz.
+- Geniş ekranda içerik ortalı, en çok 440px; köşeler kart 28, birincil buton 28 (yükseklik 56), çip/sekme 22.
+- Kart verisi v:2 (`p` genlikler, `st` çıkartmalar) yalnızca `decodeCard` ile; v:1 linkleri her zaman açılır. Tepki linki `/t/[d]` yalnızca `decodeTepki` ile okunur. İkisi de sunucuda saklanmaz.
 
 ## Dil ve ton
 - Arayüz Türkçe, sıcak, kısa; "sen" diliyle. Ünlem ve emoji ölçülü.

@@ -1,6 +1,6 @@
 ---
 name: ethics-check
-description: SağOl için etik, güvenlik, gizlilik (KVKK) ve erişilebilirlik denetimi (karanlık desenler, XSS, URL doğrulama, bozuk linkler, ses depolama güvenliği, veritabanı sorguları, veri sızıntısı, Türkçe karakter, a11y). M6, M12'de, deploy öncesi ya da kullanıcı "etik kontrol", "güvenlik kontrolü", "/ethics-check" dediğinde kullan. Sadece raporlar; düzeltmeyi çağıran yapar.
+description: SağOl için etik, güvenlik, gizlilik (KVKK) ve erişilebilirlik denetimi (karanlık desenler, XSS, URL doğrulama, bozuk linkler, ses depolama güvenliği, veritabanı sorguları, veri sızıntısı, çıkartma/tepki doğrulaması, story görseli, Türkçe karakter, a11y). M6, M12, M20'de, deploy öncesi ya da kullanıcı "etik kontrol", "güvenlik kontrolü", "/ethics-check" dediğinde kullan. Sadece raporlar; düzeltmeyi çağıran yapar.
 ---
 
 # ethics-check
@@ -48,11 +48,23 @@ Kodu değiştirme, yalnızca raporla. Soru sorma.
 - Gönderene silme linki gösteriliyor ve cihazda saklanıyor mu; alıcıya silme yetkisi verilmiyor mu?
 - Kopyalanabilir sızıntı: paylaşılan kart linki/OG görseli/`<title>` silme token'ı, ses id'si dışında başka bir sunucu verisi ya da gönderenin bilmediği bilgi içeriyor mu? Kopyalanan metinlere token karışıyor mu (yalnızca bilinçli "silme linkini kopyala" düğmesi hariç)?
 
+**2d. v3: halka, çıkartma, tepki, story**
+- Ses otomatik oynamıyor: `rg -n "autoPlay|autoplay|\.play\(\)" src` → `play()` yalnızca tıklama/tuş işleyicisinde; sayfa yüklenince, halka görününce ya da story/OG'de ses yok.
+- Hareket kapatılabilir: halka çizilerek belirme, çıkartma pop'u, satır animasyonları yalnızca `motion-safe:` ya da `prefers-reduced-motion` kontrolü arkasında; `navigator.vibrate` hiç yok.
+- Çıkartma doğrulaması (`src/lib/cikartma.ts`, `decodeCard`): tür allowlist (`kalp|yildiz|parilti|cicek|gunes|yaprak|e1..e12`), sayı ≤ 8, x/y 0..1 (URL'de 0..1000), r −180..180, s 0.5..2 (URL'de 50..200); tamsayı olmayan/bilinmeyen öğe atılıyor; testi var mı? Çıkartma türü asla `href`, `src`, `className` ya da `dangerouslySetInnerHTML`'e doğrudan girmiyor (yalnızca tablo üzerinden eşleniyor).
+- Tepki (`/t/[d]`, `src/lib/tepki.ts`): emoji allowlist (5 anahtar), adlar `decodeCard` ile aynı temizleyiciden, ≤40 kod noktası, düz metin; tepki verisi sunucuda saklanmıyor/loglanmıyor; `/t/xxx` nazik hata.
+- XSS/URL sızıntısı: kart ya da tepki verisinden gelen hiçbir değer `href`/`src`'ye ham girmiyor; paylaşım linklerinde `encodeURIComponent`; `p` alanı yalnızca regex'li base64url (64 karakter).
+- Story ve OG görseli (`/k/[d]/story`, `opengraph-image`): yalnızca kartta zaten görünenleri içeriyor (alıcı, gönderen, tarih, alıntı, halka, çıkartmalar); ses id'si, silme token'ı, URL'nin tamamı, IP ya da sayaç bilgisi YOK. Bozuk `d` → genel görsel, crash yok.
+- Arayüz ikon/metinlerinde emoji yok (yalnızca kullanıcının seçtiği çıkartma/tepki); tepki düğmelerinin Türkçe `aria-label`'ı var.
+- Dokunma hedefleri ≥44px (`min-h-11 min-w-11` ya da eşdeğeri); 4 temada metin/ikincil/düğme kontrastı ≥4.5:1 (`src/lib/kontrast.test.ts` varsa geçiyor mu?).
+- Klişe denetimi: `rg -n -i "konfeti|confetti|zarf|envelope|gradient" src` → bulgu olmamalı (yalnızca CSS'te bilinçli kullanım gerekçeli olabilir).
+
 **3. Kenar durumlar** (`npm run build && npm run start` sonrası `curl -s -o /dev/null -w "%{http_code}"`)
 - `/k/`, `/k/abc`, `/k/%%%`, 3000 karakterlik `d`, geçerli base64 ama yanlış JSON, `v:2` → crash yok, nazik hata.
 - Mesajı `<script>alert(1)</script>` olan kart düz metin görünüyor mu?
 - Eski `z`'li linkler ve yeni `h`'li linkler açılıyor mu; `h=0`, `h=1000`, `h=abc` → 1'e düşüyor mu? `s` alanı bozuk/yabancı id ise oynatıcı nazik "süresi dolmuş" durumuna mı düşüyor?
 - `DATABASE_URL` yoksa: `curl -X POST /api/ses` ve `/api/sayac` → 404.
+- v3: `/k/<v:1 z'li>`, `/k/<v:2, 8 çıkartma, p>` 200; 9 çıkartmalı/aralık dışı/bilinmeyen türlü v:2 → açılır, fazlalar atılmış; `/k/<d>/story` ve `/k/xxx/story` → 200 `image/png`; `/t/xxx` nazik hata; `POST /api/ses` bozuk `X-Peaks` → 400, `X-Peaks`'siz → 201.
 
 **4. Türkçe karakter**
 - `lang="tr"`, fontlarda `latin-ext`, OG görselinde "ğşıİöüç" doğru mu? `toUpperCase()` yerine `toLocaleUpperCase('tr')`.
